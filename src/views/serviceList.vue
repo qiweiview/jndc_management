@@ -5,6 +5,9 @@
                       style="width:20%"></el-input>
             <el-button @click="getServiceList" style="margin-left:15px">查询</el-button>
             <el-table :data="displayArray">
+                <el-table-column label="服务编号">
+                    <template slot-scope="scope"><span style="text-align: left">{{ scope.row.id }}</span></template>
+                </el-table-column>
                 <el-table-column label="服务名称">
                     <template slot-scope="scope"><span style="text-align: left">{{ scope.row.name }}</span>
                     </template>
@@ -20,11 +23,11 @@
                             style="text-align: center">{{ scope.row.belongContextIp }}</span>
                     </template>
                 </el-table-column>
-                <el-table-column label="操作">
-                    <template slot-scope="scope">
-                        <el-button size="mini" type="danger" @click="pauseService(scope.row.name)">注 销 服 务</el-button>
-                    </template>
-                </el-table-column>
+<!--                <el-table-column label="操作">-->
+<!--                    <template slot-scope="scope">-->
+<!--                        <el-button size="mini" type="danger" @click="pauseService(scope.row.name)">注 销 服 务</el-button>-->
+<!--                    </template>-->
+<!--                </el-table-column>-->
             </el-table>
         </el-col>
     </el-row>
@@ -70,7 +73,8 @@
 
             },
             getServiceList() {
-                if (this.storeArray.length == 0) {
+                // eslint-disable-next-line no-constant-condition
+                if (true) {
                     const loading = this.$loading({
                         lock: true,
                         text: 'Loading',

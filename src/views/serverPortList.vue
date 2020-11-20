@@ -19,22 +19,23 @@
                     </template>
                 </el-table-column>
                 <el-table-column label="是否在监听">
-                    <template slot-scope="scope"><span style="">{{ scope.row.portEnable==1?'是':'否' }}</span></template>
+                    <template slot-scope="scope"><span :style="{color:scope.row.portEnable==1?'#67C23A':'#F56C6C'}">{{ scope.row.portEnable==1?'端口监听中':'否' }}</span></template>
                 </el-table-column>
-                <el-table-column label="路由至">
-                    <template slot-scope="scope"><span style="">{{ scope.row.routeTo==null?'-':scope.row.routeTo}}</span></template>
+                <el-table-column label="服务关联记录">
+                    <template slot-scope="scope"><span style="">{{ scope.row.routeTo==null?'未关联过服务':scope.row.routeTo}}</span></template>
                 </el-table-column>
                 <el-table-column label="操作">
                     <template slot-scope="scope">
-                        <el-button v-if="scope.row.portEnable==1" size="mini" type="danger" @click="stopServiceBind(scope.row.id)">停 止</el-button>
-                        <el-button v-if="scope.row.portEnable==0" size="mini" type="success" @click="openPortBindDialog(scope.row.id)">启 动</el-button>
+                        <el-button v-if="scope.row.portEnable==1" size="mini" type="warning" @click="stopServiceBind(scope.row.id)">暂 停 监 听</el-button>
+                        <el-button v-if="scope.row.portEnable==0" size="mini" type="success" @click="openPortBindDialog(scope.row.id)">启 动 监 听</el-button>
+                        <el-button v-if="scope.row.portEnable==0" size="mini" type="danger" @click="deleteServiceBindRecord(scope.row.id)">移 除 监 听</el-button>
                     </template>
                 </el-table-column>
             </el-table>
             <el-dialog title="添加端口监听" :visible.sync="addPortDialog" width="20%">
                 <el-form :model="portMonitoring">
                     <el-form-item label="端口">
-                        <el-input-number v-model="portMonitoring.port" :min="500" :max="16384"
+                        <el-input-number v-model="portMonitoring.port" :min="0" :max="16384"
                                          label=""></el-input-number>
                     </el-form-item>
                     <el-form-item label="备注">
@@ -50,7 +51,7 @@
             <el-dialog title="选择绑定服务" :visible.sync="portBindDialog" width="25%">
                 <el-table :data="serverChannelList" max-height="250">
                     <el-table-column label="服务名称">
-                        <template slot-scope="scope"><span style="text-align: left">{{ scope.row.name }}</span>
+                        <template slot-scope="scope"><span :title="scope.row.id" style="text-align: left">{{ scope.row.name }}</span>
                         </template>
                     </el-table-column>
                     <el-table-column label="服务本地端口">
@@ -98,9 +99,43 @@
             }
         },
         methods: {
+            deleteServiceBindRecord(id){
+                let _this =this
+                this.$confirm('是否删除该端口监听?', '提示', {
+                    confirmButtonText: '确定',
+                    cancelButtonText: '取消',
+                    type: 'warning'
+                }).then(() => {
+
+                    let data = {serverPortId: id}
+                    request({
+                        url: '/deleteServiceBindRecord',
+                        method: 'post',
+                        data: data
+                        // eslint-disable-next-line no-unused-vars
+                    }).then(response => {
+                        if (response.code == 200) {
+                            //refresh force
+                            _this.$message.success(response.message);
+                            _this.getServerPortList()
+                        } else {
+                            _this.$message.error(response.message);
+                        }
+                        _this.portBindDialog = false
+                    }).catch(() => {
+                    })
+
+                }).catch(() => {
+
+                });
+
+
+
+
+            },
             stopServiceBind(id){
                 let _this =this
-                this.$confirm('监听停止后,已建立连接也将全部断开,是否继续?', '提示', {
+                this.$confirm('监听暂停后,已建立连接也将全部断开,是否继续?', '提示', {
                     confirmButtonText: '确定',
                     cancelButtonText: '取消',
                     type: 'warning'
@@ -133,7 +168,7 @@
 
             },
             doServiceBind(row) {
-                let data = {serverPortId: this.currentId, serviceIp: row.belongContextIp, servicePort: row.port}
+                let data = {serverPortId: this.currentId, serviceId: row.id}
                 request({
                     url: '/doServiceBind',
                     method: 'post',

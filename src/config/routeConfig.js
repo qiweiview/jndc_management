@@ -40,6 +40,10 @@ const router = new Router({
                 {
                     path: 'serverPortList',
                     component: () => import('@/views/serverPortList')
+                },
+                {
+                    path: 'ipFilter',
+                    component: () => import('@/views/ipFilter')
                 }
             ]
 

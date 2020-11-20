@@ -32,18 +32,26 @@
         data() {
             return {
                 form: {
-                    name: 'test',
-                    passWord: 'test'
+                    name: '',
+                    passWord: ''
                 }
             }
         },
         methods: {
             doLogin() {
+                const loading = this.$loading({
+                    lock: true,
+                    text: '登陆中...',
+                    spinner: 'el-icon-loading',
+                    background: 'rgba(0, 0, 0, 0.7)'
+                })
+
                 request({
                     url: '/login',
                     method: 'post',
                     data: this.form
                 }).then(response => {
+                    loading.close()
                     if (response.token == '403') {
                         this.$message.error('密码错误');
                     } else {
@@ -53,6 +61,7 @@
                         this.$router.push('management')
                     }
                 }).catch(() => {
+                    loading.close()
                 })
             }
         }

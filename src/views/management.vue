@@ -3,16 +3,20 @@
         <el-col :xs="3" :sm="3" :md="3" :lg="3" :xl="3" style="height: 100%;">
             <el-menu default-active="channel" class="el-menu-vertical-demo" @select="handleSelect">
                 <el-menu-item index="channel">
-                    <i class="el-icon-setting"></i>
+                    <i class="el-icon-s-promotion"></i>
                     <span slot="title">隧道列表</span>
                 </el-menu-item>
                 <el-menu-item index="services">
-                    <i class="el-icon-setting"></i>
-                    <span slot="title">服务列表</span>
+                    <i class="el-icon-phone-outline"></i>
+                    <span slot="title">服务注册</span>
                 </el-menu-item>
                 <el-menu-item index="serverPortList">
-                    <i class="el-icon-menu"></i>
-                    <span slot="title">服务器端口监听</span>
+                    <i class="el-icon-camera"></i>
+                    <span slot="title">端口监听</span>
+                </el-menu-item>
+                <el-menu-item index="ipFilter">
+                    <i class="el-icon-message-solid"></i>
+                    <span slot="title">IP黑白名单</span>
                 </el-menu-item>
             </el-menu>
         </el-col>
@@ -34,6 +38,9 @@
             handleSelect(key) {
                 this.$router.push('/management/'+key)
             }
+        },
+        mounted:function () {
+            this.$router.push('/management/channel')
         }
     }
 </script>

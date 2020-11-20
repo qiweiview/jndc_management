@@ -37,6 +37,11 @@ service.interceptors.response.use(
     return res
   },
   error => {
+    if (error.message.indexOf('403')!=null){
+      localStorage.removeItem('auth-token')
+      window.location.reload()
+    }
+
     Message({
       message: error.message,
       type: 'error',
