@@ -3,6 +3,12 @@ node_modules
 /dist
 
 
+# package file
+vue.config.js
+babel.config.js
+package.json
+package-lock.json
+
 # local env files
 .env.local
 .env.*.local
