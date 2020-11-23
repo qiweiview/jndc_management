@@ -19,11 +19,12 @@ websocket4v.parseMessage = (x) => {
         pageEventArray.forEach(x => {
             if (x.pageName == obj.data) {
                 x.callBack()
-                Notification.success({
-                    title: '通知',
-                    message: x.pageDescription+'数据刷新',
-                    position: 'bottom-right'
-                })
+               console.log(x.pageDescription+'数据刷新')
+                // Notification.success({
+                //     title: '通知',
+                //     message: x.pageDescription+'数据刷新',
+                //     position: 'bottom-right'
+                // })
             }
         })
     } else {
