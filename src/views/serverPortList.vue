@@ -29,6 +29,7 @@
                         <el-button v-if="scope.row.portEnable==1" size="mini" type="warning" @click="stopServiceBind(scope.row.id)">暂 停 监 听</el-button>
                         <el-button v-if="scope.row.portEnable==0" size="mini" type="success" @click="openPortBindDialog(scope.row.id)">启 动 监 听</el-button>
                         <el-button v-if="scope.row.portEnable==0" size="mini" type="danger" @click="deleteServiceBindRecord(scope.row.id)">移 除 监 听</el-button>
+                        <el-button v-if="scope.row.portEnable==2" size="mini" type="primary" disabled>{{ '监听启动中...' }}</el-button>
                     </template>
                 </el-table-column>
             </el-table>
@@ -80,6 +81,7 @@
 
 <script>
     import request from "@/config/requestConfig";
+    import websocket from "@/config/webSocketTool";
 
     export default {
         name: "serverPortList",
@@ -278,6 +280,7 @@
         }
         , mounted() {
             this.getServerPortList()
+            websocket.registerPage('serverPortList','端口监听',this.getServerPortList)
         }
     }
 </script>

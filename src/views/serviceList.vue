@@ -35,6 +35,7 @@
 
 <script>
     import request from "@/config/requestConfig";
+    import websocket from "@/config/webSocketTool";
 
     export default {
         name: "serviceList",
@@ -117,6 +118,7 @@
         }
         , mounted() {
             this.getServiceList()
+            websocket.registerPage('serviceList','服务注册',this.getServiceList)
         }
     }
 </script>

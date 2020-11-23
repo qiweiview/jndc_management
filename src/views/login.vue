@@ -32,8 +32,8 @@
         data() {
             return {
                 form: {
-                    name: '',
-                    passWord: ''
+                    name: 'test',
+                    passWord: 'test'
                 }
             }
         },

@@ -27,6 +27,8 @@
 </template>
 
 <script>
+    import websocket from "@/config/webSocketTool";
+
     export default {
         name: "management",
         data() {
@@ -35,12 +37,34 @@
             }
         },
         methods: {
+            openGlobalWebsocket() {
+                let ws = websocket.create("GLOBAL", "ws")
+                ws.onmessage = (x) => {
+                    websocket.parseMessage(x)
+                }
+                ws.onopen = () => {
+                    this.$notify.success({
+                        title: '通知',
+                        message: '连接推送服务器成功',
+                        position: 'bottom-right'
+                    });
+                }
+                ws.onclose = () => {
+                    this.$notify.error({
+                        title: '通知',
+                        message: '推送连接关闭，请刷新页面重新连接',
+                        position: 'bottom-right'
+                    });
+                }
+            },
             handleSelect(key) {
-                this.$router.push('/management/'+key)
+                this.$router.push('/management/' + key)
             }
         },
-        mounted:function () {
+        mounted: function () {
+            this.openGlobalWebsocket()
             this.$router.push('/management/channel')
+
         }
     }
 </script>

@@ -1,42 +1,81 @@
 <template>
     <el-row style="padding: 10px">
         <el-col :xs="24" :sm="24" :md="24" :lg="24" :xl="24">
-            <el-input clearable v-model="searchKey" placeholder="筛选隧道编号或IP" @change="getServerChannelTable"
-                      style="width:20%"></el-input>
-            <el-button @click="getServerChannelTable" style="margin-left:15px">查询</el-button>
-            <el-table :data="displayArray">
-                <el-table-column label="隧道编号">
-                    <template slot-scope="scope"><span style="text-align: left">{{ scope.row.id }}</span>
-                    </template>
-                </el-table-column>
-                <el-table-column label="隧道客户端IP">
-                    <template slot-scope="scope"><span style="">{{ scope.row.channelClientIp }}</span></template>
-                </el-table-column>
-                <el-table-column label="隧道客户端端口">
-                    <template slot-scope="scope"><span style="">{{ scope.row.channelClientPort }}</span></template>
-                </el-table-column>
-                <el-table-column label="注册服务数">
-                    <template slot-scope="scope"><span
-                            style="text-align: center">{{ scope.row.supportServiceNum }}</span>
-                    </template>
-                </el-table-column>
-                <el-table-column label="操作">
-                    <template slot-scope="scope">
-                        <el-button size="mini" type="danger"
-                                   @click="closeChannelByServer(scope.row.id,scope.row.supportServiceNum)">断 开
-                        </el-button>
-                        <el-button size="mini" type="success"
-                                   @click="sendHeartBeat(scope.row.id)">发 送 心 跳
-                        </el-button>
-                    </template>
-                </el-table-column>
-            </el-table>
+
+            <el-tabs v-model="activeName" @tab-click="clickTab">
+                <el-tab-pane label="隧道列表" name="a">
+                    <el-input clearable v-model="searchKey" placeholder="筛选隧道编号或IP" @change="getServerChannelTable"
+                              style="width:20%"></el-input>
+                    <el-button @click="getServerChannelTable" style="margin-left:15px">查询</el-button>
+                    <el-table :data="displayArray">
+                        <el-table-column label="隧道编号">
+                            <template slot-scope="scope"><span style="text-align: left">{{ scope.row.id }}</span>
+                            </template>
+                        </el-table-column>
+                        <el-table-column label="隧道客户端IP">
+                            <template slot-scope="scope"><span style="">{{ scope.row.channelClientIp }}</span>
+                            </template>
+                        </el-table-column>
+                        <el-table-column label="隧道客户端端口">
+                            <template slot-scope="scope"><span style="">{{ scope.row.channelClientPort }}</span>
+                            </template>
+                        </el-table-column>
+                        <el-table-column label="注册服务数">
+                            <template slot-scope="scope"><span
+                                    style="text-align: center">{{ scope.row.supportServiceNum }}</span>
+                            </template>
+                        </el-table-column>
+                        <el-table-column label="操作">
+                            <template slot-scope="scope">
+                                <el-button size="mini" type="danger"
+                                           @click="closeChannelByServer(scope.row.id,scope.row.supportServiceNum)">断 开
+                                </el-button>
+                                <el-button size="mini" type="success"
+                                           @click="sendHeartBeat(scope.row.id)">发 送 心 跳
+                                </el-button>
+                            </template>
+                        </el-table-column>
+                    </el-table>
+                </el-tab-pane>
+                <el-tab-pane label="中断记录" name="b">
+                    <el-button @click="getChannelRecord" size="mini" type="info">刷 新</el-button>
+                    <el-button @click="clearChannelRecord" size="mini" type="danger">清 空</el-button>
+                    <el-table :data="channelRecordArray" max-height="750">
+                        <el-table-column label="隧道编号">
+                            <template slot-scope="scope"><span style="text-align: left">{{ scope.row.id }}</span>
+                            </template>
+                        </el-table-column>
+                        <el-table-column label="隧道客户端IP">
+                            <template slot-scope="scope"><span style="">{{ scope.row.ip }}</span></template>
+                        </el-table-column>
+                        <el-table-column label="隧道客户端端口">
+                            <template slot-scope="scope"><span style="">{{ scope.row.port }}</span></template>
+                        </el-table-column>
+                        <el-table-column label="连接时间">
+                            <template slot-scope="scope"><span
+                                    style="text-align: center">{{  new Date(scope.row.timeStamp).toLocaleString()}}</span>
+                            </template>
+                        </el-table-column>
+                    </el-table>
+                    <el-pagination
+                            @size-change="sizeChange"
+                            @current-change="pageChange"
+                            background
+                            :page-sizes="[10, 15, 30, 100]"
+                            :page-size="recordRows"
+                            layout="sizes, prev, pager, next"
+                            :total="chanelRecordTotal">
+                    </el-pagination>
+                </el-tab-pane>
+            </el-tabs>
+
         </el-col>
     </el-row>
 </template>
 
 <script>
     import request from "@/config/requestConfig";
+    import websocket from "@/config/webSocketTool";
 
     export default {
         name: "channelList",
@@ -44,11 +83,70 @@
             return {
                 searchKey: '',
                 storeArray: [],
-                displayArray: []
+                displayArray: [],
+                channelRecordArray: [],
+                activeName: 'a',
+                recordCurrentPage: 1,
+                chanelRecordTotal: 0,
+                recordRows: 10
             }
         },
         methods: {
-            sendHeartBeat(id){
+            clearChannelRecord() {
+                let _this = this
+                this.$confirm('清空连接纪录后将不可恢复?', '提示', {
+                    confirmButtonText: '确定',
+                    cancelButtonText: '取消',
+                    type: 'warning'
+                }).then(() => {
+
+                    request({
+                        url: '/clearChannelRecord',
+                        method: 'post',
+                        data: {}
+                        // eslint-disable-next-line no-unused-vars
+                    }).then(response => {
+                        if (response.code == 200) {
+                            //refresh force
+                            _this.$message.success(response.message);
+                            _this.getChannelRecord()
+                        } else {
+                            _this.$message.error(response.message);
+                        }
+                    }).catch(() => {
+                    })
+
+                }).catch(() => {
+
+                });
+            },
+            clickTab(tab) {
+                if (tab.name == "b") {
+                    this.getChannelRecord()
+                }
+
+
+            },
+            sizeChange(size) {
+                this.recordRows = size
+                this.getChannelRecord()
+            },
+            pageChange(page) {
+                this.recordCurrentPage = page
+                this.getChannelRecord()
+            },
+            getChannelRecord() {
+                request({
+                    url: '/getChannelRecord',
+                    method: 'post',
+                    data: {page: this.recordCurrentPage, rows: this.recordRows}
+                }).then(response => {
+                    this.channelRecordArray = response.data
+                    this.chanelRecordTotal = response.total
+                }).catch(() => {
+                })
+            },
+            sendHeartBeat(id) {
                 request({
                     url: '/sendHeartBeat',
                     method: 'post',
@@ -142,6 +240,7 @@
         }
         , mounted() {
             this.getServerChannelTable()
+            websocket.registerPage('channelList', '隧道列表', this.getServerChannelTable)
         }
     }
 </script>
