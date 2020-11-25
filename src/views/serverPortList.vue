@@ -20,9 +20,11 @@
                             <template slot-scope="scope"><span style="text-align: left">{{ scope.row.name==''?'无':scope.row.name }}</span>
                             </template>
                         </el-table-column>
-                        <el-table-column label="是否监听" width="100px">
-                            <template slot-scope="scope"><span
-                                    :style="{color:scope.row.portEnable==1?'#67C23A':'#F56C6C'}">{{ scope.row.portEnable==1?'端口监听中':'否' }}</span>
+                        <el-table-column label="监听状态" width="100px">
+                            <template slot-scope="scope">
+                                <span  v-if="scope.row.portEnable==1" style="color:#67C23A">监听中</span>
+                                <span  v-if="scope.row.portEnable==0" style="color:#F56C6C">未监听</span>
+                                <span  v-if="scope.row.portEnable==2" style="color:#67C23A">启动中</span>
                             </template>
                         </el-table-column>
                         <el-table-column label="服务关联记录" width="200px">
@@ -32,7 +34,7 @@
                         <el-table-column label="操作" width="400px">
                             <template slot-scope="scope">
                                 <el-button v-if="scope.row.portEnable==1" size="mini" type="warning"
-                                           @click="stopServiceBind(scope.row.id)">暂 停 监 听
+                                           @click="stopServiceBind(scope.row.id)">停 止 监 听
                                 </el-button>
                                 <el-tooltip class="item" effect="dark" content="启动端口监听" placement="bottom">
                                     <el-button v-if="scope.row.portEnable==0" size="mini" type="success"

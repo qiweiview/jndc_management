@@ -219,6 +219,7 @@
                     }).then(response => {
                         if (response.code == 200) {
                             //refresh force
+                            this.closeAddWhitePage()
                             this.$message.success(response.message);
                             this.getIpWhiteList()
                         } else {
