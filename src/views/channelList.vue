@@ -4,7 +4,7 @@
 
             <el-tabs v-model="activeName" @tab-click="clickTab">
                 <el-tab-pane label="隧道列表" name="a">
-                    <el-input clearable v-model="searchKey" placeholder="筛选隧道编号或IP" @change="getServerChannelTable"
+                    <el-input clearable v-model="searchKey" placeholder="筛选隧道编号或IP"
                               style="width:20%"></el-input>
                     <el-button @click="getServerChannelTable" style="margin-left:15px">查询</el-button>
                     <el-table :data="displayArray">
@@ -40,7 +40,7 @@
                 <el-tab-pane label="中断记录" name="b">
                     <el-button @click="getChannelRecord" size="mini" type="info">刷 新</el-button>
                     <el-button @click="clearChannelRecord" size="mini" type="danger">清 空</el-button>
-                    <el-table :data="channelRecordArray" max-height="750">
+                    <el-table :data="channelRecordArray" max-height="85vh">
                         <el-table-column label="隧道编号">
                             <template slot-scope="scope"><span style="text-align: left">{{ scope.row.id }}</span>
                             </template>

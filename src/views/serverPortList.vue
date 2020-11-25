@@ -1,38 +1,68 @@
 <template>
     <el-row style="padding: 10px">
         <el-col :xs="24" :sm="24" :md="24" :lg="24" :xl="24">
-            <el-input clearable v-model="searchKey" placeholder="筛选服务器端口号" @change="getServerPortList"
-                      style="width:20%"></el-input>
-            <el-button @click="openAddPortDialog" type="success" style="margin-left:15px">添 加</el-button>
-            <el-button @click="getServerPortList" style="margin-left:15px">查 询</el-button>
-            <el-table :data="displayArray">
-                <el-table-column label="编号">
-                    <template slot-scope="scope"><span style="text-align: left">{{ scope.row.id }}</span>
-                    </template>
-                </el-table-column>
-                <el-table-column label="服务器端口号">
-                    <template slot-scope="scope"><span style="text-align: left">{{ scope.row.port }}</span>
-                    </template>
-                </el-table-column>
-                <el-table-column label="端口备注">
-                    <template slot-scope="scope"><span style="text-align: left">{{ scope.row.name }}</span>
-                    </template>
-                </el-table-column>
-                <el-table-column label="是否在监听">
-                    <template slot-scope="scope"><span :style="{color:scope.row.portEnable==1?'#67C23A':'#F56C6C'}">{{ scope.row.portEnable==1?'端口监听中':'否' }}</span></template>
-                </el-table-column>
-                <el-table-column label="服务关联记录">
-                    <template slot-scope="scope"><span style="">{{ scope.row.routeTo==null?'未关联过服务':scope.row.routeTo}}</span></template>
-                </el-table-column>
-                <el-table-column label="操作">
-                    <template slot-scope="scope">
-                        <el-button v-if="scope.row.portEnable==1" size="mini" type="warning" @click="stopServiceBind(scope.row.id)">暂 停 监 听</el-button>
-                        <el-button v-if="scope.row.portEnable==0" size="mini" type="success" @click="openPortBindDialog(scope.row.id)">启 动 监 听</el-button>
-                        <el-button v-if="scope.row.portEnable==0" size="mini" type="danger" @click="deleteServiceBindRecord(scope.row.id)">移 除 监 听</el-button>
-                        <el-button v-if="scope.row.portEnable==2" size="mini" type="primary" disabled>{{ '监听启动中...' }}</el-button>
-                    </template>
-                </el-table-column>
-            </el-table>
+            <el-tabs v-model="activeName" @tab-click="clickTab">
+                <el-tab-pane label="端口监听" name="a">
+                    <el-input clearable v-model="searchKey" placeholder="筛选服务器端口号"
+                              style="width:20%"></el-input>
+                    <el-button @click="openAddPortDialog" type="success" style="margin-left:15px">添 加</el-button>
+                    <el-button @click="getServerPortList" style="margin-left:15px">查 询</el-button>
+                    <el-table :data="displayArray" style="margin: 0">
+                        <el-table-column label="编号" width="300px">
+                            <template slot-scope="scope"><span style="text-align: left">{{ scope.row.id }}</span>
+                            </template>
+                        </el-table-column>
+                        <el-table-column label="监听端口" width="100px">
+                            <template slot-scope="scope"><span style="text-align: left">{{ scope.row.port }}</span>
+                            </template>
+                        </el-table-column>
+                        <el-table-column label="端口备注" width="200px">
+                            <template slot-scope="scope"><span style="text-align: left">{{ scope.row.name==''?'无':scope.row.name }}</span>
+                            </template>
+                        </el-table-column>
+                        <el-table-column label="是否监听" width="100px">
+                            <template slot-scope="scope"><span
+                                    :style="{color:scope.row.portEnable==1?'#67C23A':'#F56C6C'}">{{ scope.row.portEnable==1?'端口监听中':'否' }}</span>
+                            </template>
+                        </el-table-column>
+                        <el-table-column label="服务关联记录" width="200px">
+                            <template slot-scope="scope"><span
+                                    style="">{{ scope.row.routeTo==null?'未关联过服务':scope.row.routeTo}}</span></template>
+                        </el-table-column>
+                        <el-table-column label="操作" width="400px">
+                            <template slot-scope="scope">
+                                <el-button v-if="scope.row.portEnable==1" size="mini" type="warning"
+                                           @click="stopServiceBind(scope.row.id)">暂 停 监 听
+                                </el-button>
+                                <el-tooltip class="item" effect="dark" content="启动端口监听" placement="bottom">
+                                    <el-button v-if="scope.row.portEnable==0" size="mini" type="success"
+                                               @click="openPortBindDialog(scope.row.id)">启 动
+                                    </el-button>
+                                </el-tooltip>
+                                <el-tooltip class="item" effect="dark" content="移除端口监听" placement="bottom">
+                                    <el-button v-if="scope.row.portEnable==0" size="mini" type="danger"
+                                               @click="deleteServiceBindRecord(scope.row.id)">移 除
+                                    </el-button>
+                                </el-tooltip>
+                                <el-tooltip class="item" effect="dark" content="重置(清空)服务关联" placement="bottom">
+                                    <el-button v-if="scope.row.portEnable==0&&scope.row.routeTo!=null" size="mini"
+                                               type="warning" @click="resetBindRecord(scope.row.id)">重置
+                                    </el-button>
+                                </el-tooltip>
+
+
+                                <el-button v-if="scope.row.portEnable==2" size="mini" type="primary" disabled>{{
+                                    '监听启动中...' }}
+                                </el-button>
+                            </template>
+                        </el-table-column>
+                    </el-table>
+                </el-tab-pane>
+            </el-tabs>
+
+
+
+
             <el-dialog title="添加端口监听" :visible.sync="addPortDialog" width="20%">
                 <el-form :model="portMonitoring">
                     <el-form-item label="端口">
@@ -49,7 +79,7 @@
                     <el-button type="primary" @click="createPortMonitoring">确 定</el-button>
                 </div>
             </el-dialog>
-            <el-dialog title="选择绑定服务" :visible.sync="portBindDialog" width="25%">
+            <el-dialog title="选择端口关联服务" :visible.sync="portBindDialog" width="25%">
                 <el-table :data="serverChannelList" max-height="250">
                     <el-table-column label="服务名称">
                         <template slot-scope="scope"><span :title="scope.row.id" style="text-align: left">{{ scope.row.name }}</span>
@@ -87,6 +117,7 @@
         name: "serverPortList",
         data() {
             return {
+                activeName: 'a',
                 currentId: '',
                 searchKey: '',
                 storeArray: [],
@@ -98,11 +129,47 @@
                     name: '',
                     port: ''
                 }
+
             }
         },
         methods: {
-            deleteServiceBindRecord(id){
-                let _this =this
+            clickTab(tab) {
+                console.log(tab)
+            },
+            resetBindRecord(id) {
+
+                let _this = this
+                this.$confirm('清除关联记录后,对应服务将不再被自动关联?', '提示', {
+                    confirmButtonText: '确定',
+                    cancelButtonText: '取消',
+                    type: 'warning'
+                }).then(() => {
+                    let data = {serverPortId: id}
+                    request({
+                        url: '/resetBindRecord',
+                        method: 'post',
+                        data: data
+                        // eslint-disable-next-line no-unused-vars
+                    }).then(response => {
+                        if (response.code == 200) {
+                            //refresh force
+                            _this.$message.success(response.message)
+                            _this.getServerPortList()
+                        } else {
+                            _this.$message.error(response.message)
+                        }
+                        _this.portBindDialog = false
+                    }).catch(() => {
+                    })
+
+                }).catch(() => {
+
+                });
+
+
+            },
+            deleteServiceBindRecord(id) {
+                let _this = this
                 this.$confirm('是否删除该端口监听?', '提示', {
                     confirmButtonText: '确定',
                     cancelButtonText: '取消',
@@ -132,11 +199,9 @@
                 });
 
 
-
-
             },
-            stopServiceBind(id){
-                let _this =this
+            stopServiceBind(id) {
+                let _this = this
                 this.$confirm('监听暂停后,已建立连接也将全部断开,是否继续?', '提示', {
                     confirmButtonText: '确定',
                     cancelButtonText: '取消',
@@ -164,8 +229,6 @@
                 }).catch(() => {
 
                 });
-
-
 
 
             },
@@ -237,7 +300,7 @@
             getServerPortList() {
                 // eslint-disable-next-line no-constant-condition
                 if (true) {
-                // if (this.storeArray.length == 0) {
+                    // if (this.storeArray.length == 0) {
                     const loading = this.$loading({
                         lock: true,
                         text: 'Loading',
@@ -280,7 +343,7 @@
         }
         , mounted() {
             this.getServerPortList()
-            websocket.registerPage('serverPortList','端口监听',this.getServerPortList)
+            websocket.registerPage('serverPortList', '端口监听', this.getServerPortList)
         }
     }
 </script>

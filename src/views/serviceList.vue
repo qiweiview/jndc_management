@@ -1,7 +1,7 @@
 <template>
     <el-row style="padding: 10px">
         <el-col :xs="24" :sm="24" :md="24" :lg="24" :xl="24">
-            <el-input clearable v-model="searchKey" placeholder="筛选服务名称或隧道来源" @change="getServiceList"
+            <el-input clearable v-model="searchKey" placeholder="筛选服务名称或隧道来源"
                       style="width:20%"></el-input>
             <el-button @click="getServiceList" style="margin-left:15px">查询</el-button>
             <el-table :data="displayArray">
