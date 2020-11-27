@@ -17,6 +17,15 @@
                             </template>
                         </el-table-column>
                     </el-table>
+                    <el-pagination
+                            @size-change="sizeChange11"
+                            @current-change="pageChange11"
+                            background
+                            :page-sizes="[10, 15, 30, 100]"
+                            :page-size="recordRows11"
+                            layout="sizes, prev, pager, next"
+                            :total="chanelRecordTotal11">
+                    </el-pagination>
                 </el-tab-pane>
                 <el-tab-pane label="IP白名单" name="b">
                     <span style="display: block; font-size: 13px;color: red;padding: 10px">注意：仅白名单内IP允许放行,且优先级高于黑名单，务必谨慎设置</span>
@@ -33,6 +42,15 @@
                             </template>
                         </el-table-column>
                     </el-table>
+                    <el-pagination
+                            @size-change="sizeChange22"
+                            @current-change="pageChange22"
+                            background
+                            :page-sizes="[10, 15, 30, 100]"
+                            :page-size="recordRows22"
+                            layout="sizes, prev, pager, next"
+                            :total="chanelRecordTotal22">
+                    </el-pagination>
                 </el-tab-pane>
                 <el-tab-pane label="拦截记录" name="c">
                     <el-button size="mini" type="info" @click="getBlockRecord">刷 新</el-button>
@@ -56,6 +74,15 @@
                             </template>
                         </el-table-column>
                     </el-table>
+                    <el-pagination
+                            @size-change="sizeChange1"
+                            @current-change="pageChange1"
+                            background
+                            :page-sizes="[10, 15, 30, 100]"
+                            :page-size="recordRows1"
+                            layout="sizes, prev, pager, next"
+                            :total="chanelRecordTotal1">
+                    </el-pagination>
                 </el-tab-pane>
                 <el-tab-pane label="访问记录" name="d">
                     <el-button size="mini" type="info" @click="getReleaseRecord">刷 新</el-button>
@@ -80,6 +107,15 @@
                             </template>
                         </el-table-column>
                     </el-table>
+                    <el-pagination
+                            @size-change="sizeChange2"
+                            @current-change="pageChange2"
+                            background
+                            :page-sizes="[10, 15, 30, 100]"
+                            :page-size="recordRows2"
+                            layout="sizes, prev, pager, next"
+                            :total="chanelRecordTotal2">
+                    </el-pagination>
                 </el-tab-pane>
             </el-tabs>
         </el-col>
@@ -147,10 +183,54 @@
                     b: 0,
                     c: 0,
                     d: 0,
-                }
+                },
+                recordCurrentPage11: 1,
+                chanelRecordTotal11: 0,
+                recordRows11: 10,
+                recordCurrentPage22: 1,
+                chanelRecordTotal22: 0,
+                recordRows22: 10,
+                recordCurrentPage1: 1,
+                chanelRecordTotal1: 0,
+                recordRows1: 10,
+                recordCurrentPage2: 1,
+                chanelRecordTotal2: 0,
+                recordRows2: 10
             }
         },
         methods: {
+            sizeChange11(size) {
+                this.recordRows1 = size
+                this.getIpBlackList()
+            },
+            pageChange11(page) {
+                this.recordCurrentPage1 = page
+                this.getIpBlackList()
+            },
+            sizeChange22(size) {
+                this.recordRows2 = size
+                this.getIpWhiteList()
+            },
+            pageChange22(page) {
+                this.recordCurrentPage2 = page
+                this.getIpWhiteList()
+            },
+            sizeChange1(size) {
+                this.recordRows1 = size
+                this.getBlockRecord()
+            },
+            pageChange1(page) {
+                this.recordCurrentPage1 = page
+                this.getBlockRecord()
+            },
+            sizeChange2(size) {
+                this.recordRows2 = size
+                this.getReleaseRecord()
+            },
+            pageChange2(page) {
+                this.recordCurrentPage2 = page
+                this.getReleaseRecord()
+            },
             addBlockIpToWhiteList(ip) {
                 this.activeName='b'
                 let arr = ip.split(".")
@@ -277,10 +357,11 @@
                 request({
                     url: '/blackList',
                     method: 'post',
-                    data: {}
+                    data: {page: this.recordCurrentPage11, rows: this.recordRows11}
                     // eslint-disable-next-line no-unused-vars
                 }).then(response => {
-                    this.ipBlackList = response
+                    this.ipBlackList = response.data
+                    this.chanelRecordTotal11 = response.total
                 }).catch(() => {
                 })
             },
@@ -288,10 +369,11 @@
                 request({
                     url: '/whiteList',
                     method: 'post',
-                    data: {}
+                    data: {page: this.recordCurrentPage22, rows: this.recordRows22}
                     // eslint-disable-next-line no-unused-vars
                 }).then(response => {
                     this.ipWhiteList = response
+                    this.chanelRecordTotal22 = response.total
                 }).catch(() => {
                 })
             },
@@ -299,10 +381,11 @@
                 request({
                     url: '/releaseRecord',
                     method: 'post',
-                    data: {}
+                    data: {page: this.recordCurrentPage2, rows: this.recordRows2}
                     // eslint-disable-next-line no-unused-vars
                 }).then(response => {
-                    this.releaseIpList = response
+                    this.releaseIpList = response.data
+                    this.chanelRecordTotal1 = response.total
                 }).catch(() => {
                 })
             },
@@ -310,10 +393,11 @@
                 request({
                     url: '/blockRecord',
                     method: 'post',
-                    data: {}
+                    data: {page: this.recordCurrentPage1, rows: this.recordRows1}
                     // eslint-disable-next-line no-unused-vars
                 }).then(response => {
-                    this.blockIpList = response
+                    this.blockIpList = response.data
+                    this.chanelRecordTotal2 = response.total
                 }).catch(() => {
                 })
             },
