@@ -55,16 +55,16 @@
                 <el-tab-pane label="拦截记录" name="c">
                     <el-button size="mini" type="info" @click="getBlockRecord">刷 新</el-button>
                     <el-table :data="blockIpList">
-                        <el-table-column label="ip地址">
+                        <el-table-column label="ip地址"   sortable prop="ip">
                             <template slot-scope="scope"><span style="text-align: left">{{ scope.row.ip }}</span>
                             </template>
                         </el-table-column>
-                        <el-table-column label="访问次数">
+                        <el-table-column label="访问次数"  sortable prop="count">
                             <template slot-scope="scope"><span style="text-align: left">{{ scope.row.count }}</span>
                             </template>
                         </el-table-column>
-                        <el-table-column label="最后记录时间">
-                            <template slot-scope="scope"><span style="text-align: left">{{new Date(scope.row.lastTimeStamp).toLocaleString()  }}</span>
+                        <el-table-column label="最后记录时间"  sortable prop="lastTimeStamp">
+                            <template slot-scope="scope"><span style="text-align: left">{{new Date(scope.row.lastTimeStamp).Format("yyyy-MM-dd HH:mm:ss")  }}</span>
                             </template>
                         </el-table-column>
                         <el-table-column label="操作">
@@ -84,19 +84,20 @@
                             :total="chanelRecordTotal1">
                     </el-pagination>
                 </el-tab-pane>
+
                 <el-tab-pane label="访问记录" name="d">
                     <el-button size="mini" type="info" @click="getReleaseRecord">刷 新</el-button>
-                    <el-table :data="releaseIpList">
-                        <el-table-column label="ip地址">
+                    <el-table :data="releaseIpList" >
+                        <el-table-column label="ip地址" sortable prop="ip">
                             <template slot-scope="scope"><span style="text-align: left">{{ scope.row.ip }}</span>
                             </template>
                         </el-table-column>
-                        <el-table-column label="访问次数">
+                        <el-table-column label="访问次数" sortable prop="count">
                             <template slot-scope="scope"><span style="text-align: left">{{ scope.row.count }}</span>
                             </template>
                         </el-table-column>
-                        <el-table-column label="最后记录时间">
-                            <template slot-scope="scope"><span style="text-align: left">{{new Date(scope.row.lastTimeStamp).toLocaleString()  }}</span>
+                        <el-table-column label="最后记录时间"  sortable prop="lastTimeStamp">
+                            <template slot-scope="scope"><span style="text-align: left">{{new Date(scope.row.lastTimeStamp).Format("yyyy-MM-dd HH:mm:ss")  }}</span>
                             </template>
                         </el-table-column>
                         <el-table-column label="操作">
@@ -116,6 +117,20 @@
                             layout="sizes, prev, pager, next"
                             :total="chanelRecordTotal2">
                     </el-pagination>
+                </el-tab-pane>
+
+                <el-tab-pane label="当前设备IP" name="e">
+                    <el-form>
+                        <el-form-item label="当前设备网络出口IP：">
+                            <span style="font-size: 20px;">{{currentDeviceIp}}</span>
+                            <el-button style="margin-left: 15px" @click="getCurrentDeviceIp" size="mini">刷 新</el-button>
+                        </el-form-item>
+                        <el-form-item label="操作：">
+                            <el-button  type="success" style="margin-left: 15px" @click="addCurrentDeviceIpToWhiteList" size="mini">加入白名单</el-button>
+                        </el-form-item>
+                    </el-form>
+
+
                 </el-tab-pane>
             </el-tabs>
         </el-col>
@@ -137,7 +152,7 @@
                 <el-button type="primary" @click="sendAddBlack">确 定</el-button>
             </div>
         </el-dialog>
-        <el-dialog title="添加IP白" :visible.sync="whiteAddPage" width="20%">
+        <el-dialog title="添加IP白名单" :visible.sync="whiteAddPage" width="20%">
             <el-form>
                 <el-form-item label="IP地址">
                     <el-input style="width: 20%" maxlength="3" v-model="ipWhite.a" autocomplete="off"></el-input>
@@ -161,10 +176,27 @@
 <script>
     import request from "@/config/requestConfig";
 
+    Date.prototype.Format = function (fmt) {
+        let o = {
+            "M+": this.getMonth() + 1, //月份
+            "d+": this.getDate(), //日
+            "H+": this.getHours(), //小时
+            "m+": this.getMinutes(), //分
+            "s+": this.getSeconds(), //秒
+            "q+": Math.floor((this.getMonth() + 3) / 3), //季度
+            "S": this.getMilliseconds() //毫秒
+        };
+        if (/(y+)/.test(fmt)) fmt = fmt.replace(RegExp.$1, (this.getFullYear() + "").substr(4 - RegExp.$1.length));
+        for (let k in o)
+            if (new RegExp("(" + k + ")").test(fmt)) fmt = fmt.replace(RegExp.$1, (RegExp.$1.length == 1) ? (o[k]) : (("00" + o[k]).substr(("" + o[k]).length)));
+        return fmt;
+    }
+
     export default {
         name: "ipFilter",
         data() {
             return {
+                currentDeviceIp:'-',
                 activeName: 'a',
                 ipBlackList: [],
                 ipWhiteList: [],
@@ -199,6 +231,42 @@
             }
         },
         methods: {
+            dateFormat(){
+
+            },
+            addCurrentDeviceIpToWhiteList(){
+                let arr = this.currentDeviceIp.split(".")
+                if (arr.length != 4) {
+                    this.$message.error("错误的ip")
+                }
+                this.whiteAddPage = true
+                this.ipWhite = {
+                    a: arr[0],
+                    b: arr[1],
+                    c: arr[2],
+                    d: arr[3],
+                }
+                this.activeName='b'
+            },
+            getCurrentDeviceIp(){
+                const loading = this.$loading({
+                    lock: true,
+                    text: '加载中...',
+                    spinner: 'el-icon-loading',
+                    background: 'rgba(0, 0, 0, 0.7)'
+                })
+                request({
+                    url: '/getCurrentDeviceIp',
+                    method: 'post',
+                    data: {}
+                    // eslint-disable-next-line no-unused-vars
+                }).then(response => {
+                   this.currentDeviceIp=response.ip
+                    loading.close()
+                }).catch(() => {
+                    loading.close()
+                })
+            },
             sizeChange11(size) {
                 this.recordRows1 = size
                 this.getIpBlackList()
@@ -352,8 +420,20 @@
                     this.getReleaseRecord()
                 }
 
+                if (tab.name == "e") {
+                    this.getCurrentDeviceIp()
+                }
+
+
+
             },
             getIpBlackList() {
+                const loading = this.$loading({
+                    lock: true,
+                    text: '加载中...',
+                    spinner: 'el-icon-loading',
+                    background: 'rgba(0, 0, 0, 0.7)'
+                })
                 request({
                     url: '/blackList',
                     method: 'post',
@@ -362,22 +442,38 @@
                 }).then(response => {
                     this.ipBlackList = response.data
                     this.chanelRecordTotal11 = response.total
+                    loading.close()
                 }).catch(() => {
+                    loading.close()
                 })
             },
             getIpWhiteList() {
+                const loading = this.$loading({
+                    lock: true,
+                    text: '加载中...',
+                    spinner: 'el-icon-loading',
+                    background: 'rgba(0, 0, 0, 0.7)'
+                })
                 request({
                     url: '/whiteList',
                     method: 'post',
                     data: {page: this.recordCurrentPage22, rows: this.recordRows22}
                     // eslint-disable-next-line no-unused-vars
                 }).then(response => {
-                    this.ipWhiteList = response
+                    this.ipWhiteList = response.data
                     this.chanelRecordTotal22 = response.total
+                    loading.close()
                 }).catch(() => {
+                    loading.close()
                 })
             },
             getReleaseRecord() {
+                const loading = this.$loading({
+                    lock: true,
+                    text: '加载中...',
+                    spinner: 'el-icon-loading',
+                    background: 'rgba(0, 0, 0, 0.7)'
+                })
                 request({
                     url: '/releaseRecord',
                     method: 'post',
@@ -385,11 +481,19 @@
                     // eslint-disable-next-line no-unused-vars
                 }).then(response => {
                     this.releaseIpList = response.data
-                    this.chanelRecordTotal1 = response.total
+                    this.chanelRecordTotal2 = response.total
+                    loading.close()
                 }).catch(() => {
+                    loading.close()
                 })
             },
             getBlockRecord() {
+                const loading = this.$loading({
+                    lock: true,
+                    text: '加载中...',
+                    spinner: 'el-icon-loading',
+                    background: 'rgba(0, 0, 0, 0.7)'
+                })
                 request({
                     url: '/blockRecord',
                     method: 'post',
@@ -397,8 +501,10 @@
                     // eslint-disable-next-line no-unused-vars
                 }).then(response => {
                     this.blockIpList = response.data
-                    this.chanelRecordTotal2 = response.total
+                    this.chanelRecordTotal1 = response.total
+                    loading.close()
                 }).catch(() => {
+                    loading.close()
                 })
             },
             deleteRule(id, tag) {

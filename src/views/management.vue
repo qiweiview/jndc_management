@@ -8,7 +8,7 @@
                 </el-menu-item>
                 <el-menu-item index="services">
                     <i class="el-icon-phone-outline"></i>
-                    <span slot="title">服务注册</span>
+                    <span slot="title">服务注册信息</span>
                 </el-menu-item>
                 <el-menu-item index="serverPortList">
                     <i class="el-icon-camera"></i>
@@ -16,7 +16,11 @@
                 </el-menu-item>
                 <el-menu-item index="ipFilter">
                     <i class="el-icon-message-solid"></i>
-                    <span slot="title">IP黑白名单</span>
+                    <span slot="title">IP访问管控</span>
+                </el-menu-item>
+                <el-menu-item index="safeExit">
+                    <i class="el-icon-close"></i>
+                    <span slot="title">安全退出系统</span>
                 </el-menu-item>
             </el-menu>
         </el-col>
@@ -58,7 +62,13 @@
                 }
             },
             handleSelect(key) {
-                this.$router.push('/management/' + key)
+                if (key == 'safeExit') {
+                    localStorage.removeItem('auth-token')
+                    this.$router.push('/')
+                    this.$message.success("系统登出")
+                } else {
+                    this.$router.push('/management/' + key)
+                }
             }
         },
         mounted: function () {
