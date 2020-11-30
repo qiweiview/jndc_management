@@ -1,11 +1,14 @@
 import axios from 'axios'
 import { Message } from 'element-ui'
 
+
 // create an axios instance
 const service = axios.create({
   baseURL: window.runtimeConfig.BASE_REQUEST_PATH, // url = base url + request url
   timeout: 5000 // request timeout
 })
+
+service.baseUrl=window.runtimeConfig.BASE_REQUEST_PATH
 
 // request interceptor
 service.interceptors.request.use(
