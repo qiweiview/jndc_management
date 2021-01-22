@@ -11,7 +11,7 @@
                         <el-input v-model="form.name" placeholder="用户名"></el-input>
                     </el-form-item>
                     <el-form-item label="密码">
-                        <el-input v-model="form.passWord" type="password" ref="password" placeholder="密码"></el-input>
+                        <el-input @keyup.native.enter="doLogin" v-model="form.passWord" type="password" ref="password" placeholder="密码"></el-input>
                     </el-form-item>
                     <el-form-item style="text-align: right;">
                         <el-button type="primary" @click="doLogin">登录</el-button>

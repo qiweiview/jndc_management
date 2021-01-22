@@ -25,6 +25,10 @@
                                     style="text-align: center">{{ scope.row.supportServiceNum }}</span>
                             </template>
                         </el-table-column>
+                        <el-table-column label="最后心跳时间">
+                            <template slot-scope="scope"><span style="">{{ new Date(scope.row.lastHearBeatTimeStamp).Format("yyyy-MM-dd HH:mm:ss")  }}</span>
+                            </template>
+                        </el-table-column>
                         <el-table-column label="操作">
                             <template slot-scope="scope">
                                 <el-button size="mini" type="danger"

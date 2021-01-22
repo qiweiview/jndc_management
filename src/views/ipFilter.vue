@@ -54,16 +54,17 @@
                 </el-tab-pane>
                 <el-tab-pane label="拦截记录" name="c">
                     <el-button size="mini" type="info" @click="getBlockRecord">刷 新</el-button>
+                    <el-button size="mini" type="danger" @click="openClearWindow(1)">清 空</el-button>
                     <el-table :data="blockIpList">
-                        <el-table-column label="ip地址"   sortable prop="ip">
+                        <el-table-column label="ip地址" sortable prop="ip">
                             <template slot-scope="scope"><span style="text-align: left">{{ scope.row.ip }}</span>
                             </template>
                         </el-table-column>
-                        <el-table-column label="访问次数"  sortable prop="count">
+                        <el-table-column label="访问次数" sortable prop="count">
                             <template slot-scope="scope"><span style="text-align: left">{{ scope.row.count }}</span>
                             </template>
                         </el-table-column>
-                        <el-table-column label="最后记录时间"  sortable prop="lastTimeStamp">
+                        <el-table-column label="最后记录时间" sortable prop="lastTimeStamp">
                             <template slot-scope="scope"><span style="text-align: left">{{new Date(scope.row.lastTimeStamp).Format("yyyy-MM-dd HH:mm:ss")  }}</span>
                             </template>
                         </el-table-column>
@@ -87,7 +88,8 @@
 
                 <el-tab-pane label="访问记录" name="d">
                     <el-button size="mini" type="info" @click="getReleaseRecord">刷 新</el-button>
-                    <el-table :data="releaseIpList" >
+                    <el-button size="mini" type="danger" @click="openClearWindow(0)">清 空</el-button>
+                    <el-table :data="releaseIpList">
                         <el-table-column label="ip地址" sortable prop="ip">
                             <template slot-scope="scope"><span style="text-align: left">{{ scope.row.ip }}</span>
                             </template>
@@ -96,7 +98,7 @@
                             <template slot-scope="scope"><span style="text-align: left">{{ scope.row.count }}</span>
                             </template>
                         </el-table-column>
-                        <el-table-column label="最后记录时间"  sortable prop="lastTimeStamp">
+                        <el-table-column label="最后记录时间" sortable prop="lastTimeStamp">
                             <template slot-scope="scope"><span style="text-align: left">{{new Date(scope.row.lastTimeStamp).Format("yyyy-MM-dd HH:mm:ss")  }}</span>
                             </template>
                         </el-table-column>
@@ -126,7 +128,9 @@
                             <el-button style="margin-left: 15px" @click="getCurrentDeviceIp" size="mini">刷 新</el-button>
                         </el-form-item>
                         <el-form-item label="操作：">
-                            <el-button  type="success" style="margin-left: 15px" @click="addCurrentDeviceIpToWhiteList" size="mini">加入白名单</el-button>
+                            <el-button type="success" style="margin-left: 15px" @click="addCurrentDeviceIpToWhiteList"
+                                       size="mini">加入白名单
+                            </el-button>
                         </el-form-item>
                     </el-form>
 
@@ -170,6 +174,33 @@
                 <el-button type="primary" @click="sendAddWhite">确 定</el-button>
             </div>
         </el-dialog>
+
+        <el-dialog title="清空记录" :visible.sync="recordClearWindow" width="30%">
+            <el-form>
+                <el-form-item>
+                    <el-radio v-model="clearType" label="1">清空访问量前10以外的记录</el-radio>
+
+                </el-form-item>
+                <el-form-item>
+                    <el-radio v-model="clearType" label="2">清空选择日期之前的记录</el-radio>
+                    <el-date-picker
+                            value-format="timestamp"
+                            ref="datePicker"
+                            v-model="clearDateLimit"
+                            type="datetime"
+                            placeholder=""
+                            align="right"
+                            :picker-options="pickerOptions">
+                    </el-date-picker>
+                </el-form-item>
+
+
+            </el-form>
+            <div slot="footer" class="dialog-footer">
+                <el-button @click="closeClearWindow">取 消</el-button>
+                <el-button type="primary" @click="doRecordClear">清 空</el-button>
+            </div>
+        </el-dialog>
     </el-row>
 </template>
 
@@ -196,7 +227,33 @@
         name: "ipFilter",
         data() {
             return {
-                currentDeviceIp:'-',
+                recordType: -1, /* 0 release 1 block*/
+                clearDateLimit: '',
+                pickerOptions: {
+                    shortcuts: [{
+                        text: '今天',
+                        onClick(picker) {
+                            picker.$emit('pick', new Date());
+                        }
+                    }, {
+                        text: '昨天',
+                        onClick(picker) {
+                            const date = new Date();
+                            date.setTime(date.getTime() - 3600 * 1000 * 24);
+                            picker.$emit('pick', date);
+                        }
+                    }, {
+                        text: '一周前',
+                        onClick(picker) {
+                            const date = new Date();
+                            date.setTime(date.getTime() - 3600 * 1000 * 24 * 7);
+                            picker.$emit('pick', date);
+                        }
+                    }]
+                },
+                clearType: '1',
+                recordClearWindow: false,
+                currentDeviceIp: '-',
                 activeName: 'a',
                 ipBlackList: [],
                 ipWhiteList: [],
@@ -231,10 +288,54 @@
             }
         },
         methods: {
-            dateFormat(){
+            doRecordClear() {
+                if (this.clearType === '2') {
+                    if (this.clearDateLimit == null || this.clearDateLimit === '') {
+                        this.$message.error("请选择日期")
+                        this.$refs['datePicker'].focus()
+                    }
+                }
+
+                const loading = this.$loading({
+                    lock: true,
+                    text: '加载中...',
+                    spinner: 'el-icon-loading',
+                    background: 'rgba(0, 0, 0, 0.7)'
+                })
+                request({
+                    url: '/clearIpRecord',
+                    method: 'post',
+                    data: {
+                        clearType: this.clearType,
+                        clearDateLimit: this.clearDateLimit,
+                        recordType: this.recordType
+                    }
+                    // eslint-disable-next-line no-unused-vars
+                }).then(response => {
+                    this.closeClearWindow()
+                    loading.close()
+                    if (this.recordType === 0) {
+                        this.getReleaseRecord()
+                    } else {
+                        this.getBlockRecord()
+                    }
+                }).catch(() => {
+                    loading.close()
+                })
+
 
             },
-            addCurrentDeviceIpToWhiteList(){
+            closeClearWindow() {
+                this.recordClearWindow = false
+            },
+            openClearWindow(type) {
+                this.recordType = type
+                this.recordClearWindow = true
+            },
+            dateFormat() {
+
+            },
+            addCurrentDeviceIpToWhiteList() {
                 let arr = this.currentDeviceIp.split(".")
                 if (arr.length != 4) {
                     this.$message.error("错误的ip")
@@ -246,9 +347,9 @@
                     c: arr[2],
                     d: arr[3],
                 }
-                this.activeName='b'
+                this.activeName = 'b'
             },
-            getCurrentDeviceIp(){
+            getCurrentDeviceIp() {
                 const loading = this.$loading({
                     lock: true,
                     text: '加载中...',
@@ -261,7 +362,7 @@
                     data: {}
                     // eslint-disable-next-line no-unused-vars
                 }).then(response => {
-                   this.currentDeviceIp=response.ip
+                    this.currentDeviceIp = response.ip
                     loading.close()
                 }).catch(() => {
                     loading.close()
@@ -300,7 +401,7 @@
                 this.getReleaseRecord()
             },
             addBlockIpToWhiteList(ip) {
-                this.activeName='b'
+                this.activeName = 'b'
                 let arr = ip.split(".")
                 if (arr.length != 4) {
                     this.$message.error("错误的ip")
@@ -315,7 +416,7 @@
 
             },
             addReleaseIpToBlackList(ip) {
-                this.activeName='a'
+                this.activeName = 'a'
                 let arr = ip.split(".")
                 if (arr.length != 4) {
                     this.$message.error("错误的ip")
@@ -423,7 +524,6 @@
                 if (tab.name == "e") {
                     this.getCurrentDeviceIp()
                 }
-
 
 
             },
