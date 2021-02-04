@@ -16,15 +16,26 @@
                             <template slot-scope="scope"><span style="text-align: left">{{ scope.row.port }}</span>
                             </template>
                         </el-table-column>
+                        <el-table-column label="处理请求时间段" width="200px">
+                            <template slot-scope="scope"><span style="text-align: left">{{ scope.row.enableDateRange.split(",")[0]+' 至 '+scope.row.enableDateRange.split(",")[1] }}</span>
+                            </template>
+                        </el-table-column>
+                        <el-table-column label="端口状态" width="150px">
+                            <template slot-scope="scope">
+                                <span :style="{'text-align': 'left','color':checkPortStateByDateRange(scope.row.enableDateRange)?'green':'red'}">
+                            {{checkPortStateByDateRange(scope.row.enableDateRange)?'处理请求':'不处理请求'}}
+                            </span>
+                            </template>
+                        </el-table-column>
                         <el-table-column label="端口备注" width="200px">
                             <template slot-scope="scope"><span style="text-align: left">{{ scope.row.name==''?'无':scope.row.name }}</span>
                             </template>
                         </el-table-column>
                         <el-table-column label="监听状态" width="100px">
                             <template slot-scope="scope">
-                                <span  v-if="scope.row.portEnable==1" style="color:#67C23A">监听中</span>
-                                <span  v-if="scope.row.portEnable==0" style="color:#F56C6C">未监听</span>
-                                <span  v-if="scope.row.portEnable==2" style="color:#67C23A">启动中</span>
+                                <span v-if="scope.row.portEnable==1" style="color:#67C23A">监听中</span>
+                                <span v-if="scope.row.portEnable==0" style="color:#F56C6C">未监听</span>
+                                <span v-if="scope.row.portEnable==2" style="color:#67C23A">启动中</span>
                             </template>
                         </el-table-column>
                         <el-table-column label="服务关联记录" width="200px">
@@ -33,16 +44,26 @@
                         </el-table-column>
                         <el-table-column label="操作" width="400px">
                             <template slot-scope="scope">
+                                <el-tooltip class="item" effect="dark" content="修改处理请求时间段" placement="bottom">
+                                    <el-button size="mini" type="info"
+                                               @click="openDateRangeEditDialog(scope.row.id,scope.row.enableDateRange)">编 辑
+                                    </el-button>
+                                </el-tooltip>
+
                                 <el-button v-if="scope.row.portEnable==1" size="mini" type="warning"
                                            @click="stopServiceBind(scope.row.id)">停 止 监 听
                                 </el-button>
+
                                 <el-tooltip class="item" effect="dark" content="启动端口监听" placement="bottom">
                                     <el-button v-if="scope.row.portEnable==0" size="mini" type="success"
                                                @click="openPortBindDialog(scope.row.id)">启 动
                                     </el-button>
                                 </el-tooltip>
+                                <el-button v-if="scope.row.portEnable==2" size="mini" type="primary" disabled>{{
+                                    '监听启动中...' }}
+                                </el-button>
                                 <el-tooltip class="item" effect="dark" content="移除端口监听" placement="bottom">
-                                    <el-button v-if="scope.row.portEnable==0" size="mini" type="danger"
+                                    <el-button v-if="scope.row.portEnable==0||scope.row.portEnable==2" size="mini" type="danger"
                                                @click="deleteServiceBindRecord(scope.row.id)">移 除
                                     </el-button>
                                 </el-tooltip>
@@ -53,24 +74,63 @@
                                 </el-tooltip>
 
 
-                                <el-button v-if="scope.row.portEnable==2" size="mini" type="primary" disabled>{{
-                                    '监听启动中...' }}
-                                </el-button>
+
                             </template>
                         </el-table-column>
                     </el-table>
                 </el-tab-pane>
             </el-tabs>
 
+            <el-dialog title="修改处理请求时间段" :visible.sync="dateRangeEditDialog" width="30%">
+                <el-form label-position="top" :model="portMonitoring">
+                    <el-form-item label="接收请求时间段">
+                        <el-time-picker
+                                value-format="HH:mm:ss"
 
-
-
-            <el-dialog title="添加端口监听" :visible.sync="addPortDialog" width="20%">
-                <el-form :model="portMonitoring">
+                                is-range
+                                v-model="chooseDateRange"
+                                range-separator="至"
+                                start-placeholder="开始时间"
+                                end-placeholder="结束时间"
+                                placeholder="选择时间范围">
+                        </el-time-picker>
+                        <el-tooltip style="margin-left: 15px;font-size: 15px" class="item" effect="dark"
+                                    content="设置的时段外,端口将不处理请求" placement="right">
+                            <i class="el-icon-question"></i>
+                        </el-tooltip>
+                    </el-form-item>
+                </el-form>
+                <div slot="footer" class="dialog-footer">
+                    <el-button @click="closeDateRangeEditDialog">取 消</el-button>
+                    <el-button type="primary" @click="doDateRangeEdit">确 定</el-button>
+                </div>
+            </el-dialog>
+            <el-dialog title="添加端口监听" :visible.sync="addPortDialog" width="30%">
+                <el-form label-position="top" :model="portMonitoring">
                     <el-form-item label="端口">
                         <el-input-number v-model="portMonitoring.port" :min="0" :max="16384"
                                          label=""></el-input-number>
                     </el-form-item>
+
+                    <el-form-item label="接收请求时间段">
+                        <el-time-picker
+                                value-format="HH:mm:ss"
+
+                                is-range
+                                v-model="dateRange"
+                                range-separator="至"
+                                start-placeholder="开始时间"
+                                end-placeholder="结束时间"
+                                placeholder="选择时间范围">
+                        </el-time-picker>
+
+                        <el-tooltip style="margin-left: 15px;font-size: 15px" class="item" effect="dark"
+                                    content="设置的时段外,端口将不处理请求" placement="right">
+                            <i class="el-icon-question"></i>
+                        </el-tooltip>
+
+                    </el-form-item>
+
                     <el-form-item label="备注">
                         <el-input v-model="portMonitoring.name" maxlength="10" autocomplete="off"></el-input>
                     </el-form-item>
@@ -119,15 +179,19 @@
         name: "serverPortList",
         data() {
             return {
+                chooseDateRange: ['00:00:00', '23:59:59'],
+                dateRange: ['00:00:00', '23:59:59'],
                 activeName: 'a',
                 currentId: '',
                 searchKey: '',
                 storeArray: [],
                 displayArray: [],
+                dateRangeEditDialog:false,
                 addPortDialog: false,
                 portBindDialog: false,
                 serverChannelList: [],
                 portMonitoring: {
+                    enableDateRange: '',
                     name: '',
                     port: ''
                 }
@@ -135,6 +199,54 @@
             }
         },
         methods: {
+            doDateRangeEdit(){
+                let enableDateRange=this.chooseDateRange[0] + ',' + this.chooseDateRange[1]
+                let body={enableDateRange:enableDateRange,serverPortId: this.currentId}
+                request({
+                    url: '/doDateRangeEdit',
+                    method: 'post',
+                    data: body
+                    // eslint-disable-next-line no-unused-vars
+                }).then(response => {
+                    if (response.code == 200) {
+                        this.$message.success(response.message);
+                    } else {
+                        this.$message.error(response.message);
+                    }
+                    this.closeDateRangeEditDialog()
+                    this.getServerPortList()
+                }).catch(() => {
+                })
+
+            },
+            closeDateRangeEditDialog(){
+                this.dateRangeEditDialog=false
+            },
+            openDateRangeEditDialog(id,dateRangeStr){
+                this.currentId=id
+                this.chooseDateRange=[dateRangeStr.split(",")[0],dateRangeStr.split(",")[1]]
+                this.dateRangeEditDialog=true
+            },
+            checkBefore(d1, d2) {
+                return d1.localeCompare(d2) == -1
+            },
+            checkPortStateByDateRange(dateRange) {
+                if (dateRange == '') {
+                    dateRange = '00:00:00,23:59:59'
+                }
+                let dateArray = dateRange.split(",")
+                let start = dateArray[0]
+                let end = dateArray[1]
+                let now = new Date().toLocaleTimeString('it-IT')
+                let r1 = this.checkBefore(start, now)
+                let r2 = this.checkBefore(now, end)
+                if (r1 && r2) {
+                    return true
+                } else {
+                    return false
+                }
+
+            },
             clickTab(tab) {
                 console.log(tab)
             },
@@ -255,6 +367,8 @@
 
             },
             createPortMonitoring() {
+                this.portMonitoring.enableDateRange = this.dateRange[0] + ',' + this.dateRange[1]
+
                 request({
                     url: '/createPortMonitoring',
                     method: 'post',
