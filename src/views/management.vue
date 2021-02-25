@@ -18,6 +18,10 @@
                     <i class="el-icon-message-solid"></i>
                     <span slot="title">IP访问管控</span>
                 </el-menu-item>
+                <el-menu-item index="httpApp">
+                    <i class="el-icon-s-comment"></i>
+                    <span slot="title">HTTP应用</span>
+                </el-menu-item>
                 <el-menu-item index="safeExit">
                     <i class="el-icon-close"></i>
                     <span slot="title">安全退出系统</span>

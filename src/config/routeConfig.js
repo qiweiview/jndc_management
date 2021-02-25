@@ -44,6 +44,10 @@ const router = new Router({
                 {
                     path: 'ipFilter',
                     component: () => import('@/views/ipFilter')
+                },
+                {
+                    path: 'httpApp',
+                    component: () => import('@/views/HttpApp')
                 }
             ]
 
