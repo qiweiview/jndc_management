@@ -82,7 +82,7 @@
 
                 <el-form-item label="重定向地址" v-show="!hostForm.isUsedFixedReturn">
                     <el-input style="width: 60%" v-model="hostForm.redirectAddress"></el-input>
-                    <el-button size="mini" type="primary" style="margin-left: 15px"  @click="openInNewWindow(hostFormEdit.redirectAddress)">测试</el-button>
+                    <el-button size="mini" type="primary" style="margin-left: 15px"  @click="openInNewWindow(hostForm.redirectAddress)">测试</el-button>
                 </el-form-item>
 
             </el-form>
