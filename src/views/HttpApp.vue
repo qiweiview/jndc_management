@@ -38,7 +38,8 @@
             </el-pagination>
         </el-col>
 
-        <el-dialog :close-on-press-escape="false" :close-on-click-modal="false" title="新增域名规则" :visible.sync="hostCreateBlog" width="40%">
+        <el-dialog :close-on-press-escape="false" :close-on-click-modal="false" title="新增域名规则"
+                   :visible.sync="hostCreateBlog" width="40%">
             <el-form label-position="top">
                 <el-form-item label="域名包含字符">
                     <span style="display:block;font-size: 13px;color: #409EFF;padding: 10px">
@@ -48,17 +49,20 @@
                 </el-form-item>
 
                 <el-form-item label="该规则下,使用固定返回值">
+                    <el-radio v-model="hostForm.routeType" @change="focusForward" label="2">请求转发</el-radio>
+                    <el-radio v-model="hostForm.routeType" label="0">重定向</el-radio>
+                    <el-radio v-model="hostForm.routeType" label="1">固定值返回</el-radio>
 
-                    <el-switch
-                            active-text="是"
-                            inactive-text="否"
-                            v-model="hostForm.isUsedFixedReturn"
-                    >
-                    </el-switch>
+                    <!--                    <el-switch-->
+                    <!--                            active-text="是"-->
+                    <!--                            inactive-text="否"-->
+                    <!--                            v-model="hostForm.routeType"-->
+                    <!--                    >-->
+                    <!--                    </el-switch>-->
 
                 </el-form-item>
 
-                <el-form-item label="消息类型" v-show="hostForm.isUsedFixedReturn">
+                <el-form-item label="消息类型" v-show="hostForm.routeType=='1'">
                     <el-select v-model="hostForm.contentType" placeholder="请选择">
                         <el-option
                                 v-for="item in options"
@@ -69,7 +73,7 @@
                     </el-select>
                 </el-form-item>
 
-                <el-form-item label="固定返回值" v-show="hostForm.isUsedFixedReturn">
+                <el-form-item label="固定返回值" v-show="hostForm.routeType=='1'">
                     <el-input
                             style="font-family: 'Fira Code'"
                             resize="none"
@@ -80,9 +84,35 @@
                     </el-input>
                 </el-form-item>
 
-                <el-form-item label="重定向地址" v-show="!hostForm.isUsedFixedReturn">
+                <el-form-item label="重定向地址" v-show="hostForm.routeType=='0'">
                     <el-input style="width: 60%" v-model="hostForm.redirectAddress"></el-input>
-                    <el-button size="mini" type="primary" style="margin-left: 15px"  @click="openInNewWindow(hostForm.redirectAddress)">测试</el-button>
+                    <el-button size="mini" type="primary" style="margin-left: 15px"
+                               @click="openInNewWindow(hostForm.redirectAddress)">测试
+                    </el-button>
+                </el-form-item>
+
+                <el-form-item label="请求转发地址" v-show="hostForm.routeType=='2'">
+                    <span>转发至端口：{{ this.hostForm.forwardPort}}</span>
+                    <el-table :data="displayArray" style="margin: 0">
+                        <el-table-column label="监听端口" width="100px">
+                            <template slot-scope="scope"><span style="text-align: left">{{ scope.row.port }}</span>
+                            </template>
+                        </el-table-column>
+                        <el-table-column label="服务关联记录" width="200px">
+                            <template slot-scope="scope"><span
+                                    style="">{{ scope.row.routeTo==null?'未关联过服务':scope.row.routeTo}}</span></template>
+                        </el-table-column>
+
+
+                        <el-table-column label="操作" width="400px">
+
+                            <template slot-scope="scope">
+                                <el-button size="mini" type="primary"  @click="chooseService(scope.row)" >
+                                    选择
+                                </el-button>
+                            </template>
+                        </el-table-column>
+                    </el-table>
                 </el-form-item>
 
             </el-form>
@@ -92,7 +122,8 @@
             </div>
         </el-dialog>
 
-        <el-dialog :close-on-press-escape="false"  :close-on-click-modal="false" title="编辑域名规则" :visible.sync="hostCreateBlogEdit" width="40%">
+        <el-dialog :close-on-press-escape="false" :close-on-click-modal="false" title="编辑域名规则"
+                   :visible.sync="hostCreateBlogEdit" width="40%">
             <el-form label-position="top">
                 <el-form-item label="域名包含字符">
                      <span style="display:block;font-size: 13px;color: #409EFF;padding: 10px">
@@ -106,13 +137,13 @@
                     <el-switch
                             active-text="是"
                             inactive-text="否"
-                            v-model="hostFormEdit.isUsedFixedReturn"
+                            v-model="hostFormEdit.routeType"
                     >
                     </el-switch>
 
                 </el-form-item>
 
-                <el-form-item label="消息类型" v-show="hostFormEdit.isUsedFixedReturn">
+                <el-form-item label="消息类型" v-show="hostFormEdit.routeType">
                     <el-select v-model="hostFormEdit.contentType" placeholder="请选择">
                         <el-option
                                 v-for="item in options"
@@ -123,7 +154,7 @@
                     </el-select>
                 </el-form-item>
 
-                <el-form-item label="固定返回值" v-show="hostFormEdit.isUsedFixedReturn">
+                <el-form-item label="固定返回值" v-show="hostFormEdit.routeType">
                     <el-input
                             style="font-family: 'Fira Code'"
                             resize="none"
@@ -134,9 +165,11 @@
                     </el-input>
                 </el-form-item>
 
-                <el-form-item label="重定向地址" v-show="!hostFormEdit.isUsedFixedReturn">
+                <el-form-item label="重定向地址" v-show="!hostFormEdit.routeType">
                     <el-input style="width: 60%" v-model="hostFormEdit.redirectAddress"></el-input>
-                    <el-button size="mini" type="primary" style="margin-left: 15px"  @click="openInNewWindow(hostFormEdit.redirectAddress)">测试</el-button>
+                    <el-button size="mini" type="primary" style="margin-left: 15px"
+                               @click="openInNewWindow(hostFormEdit.redirectAddress)">测试
+                    </el-button>
                 </el-form-item>
 
             </el-form>
@@ -158,6 +191,7 @@
         name: "serviceList",
         data() {
             return {
+                displayArray: [],
                 searchKey: '',
                 hostList: [],
                 recordRows: 10,
@@ -168,18 +202,22 @@
                 currentHost: "",
                 hostForm: {
                     hostKeyWord: '',
-                    isUsedFixedReturn: false,
+                    routeType: '2',
                     fixedTextArea: '',
                     contentType: 'application/json',
-                    redirectAddress: ''
+                    redirectAddress: '',
+                    forwardHost: '',
+                    forwardPort: 80
                 },
                 hostFormEdit: {
                     id: '',
                     hostKeyWord: '',
-                    isUsedFixedReturn: false,
+                    routeType: '2',
                     fixedTextArea: '',
                     contentType: 'application/json',
-                    redirectAddress: ''
+                    redirectAddress: '',
+                    forwardHost: '',
+                    forwardPort: 80
                 },
                 options: [
                     {
@@ -201,8 +239,30 @@
             }
         },
         methods: {
-            openInNewWindow(url){
-                window.open(url,'','width=1440,height=900,left=150,top=150')
+            chooseService(x){
+                this.hostForm.forwardPort=x.port
+            },
+            focusForward(x) {
+                console.log(x);
+                this.getServiceList()
+            },
+            getServiceList() {
+                // eslint-disable-next-line no-constant-condition
+
+                request({
+                    url: '/getServerPortList',
+                    method: 'post',
+                    data: {}
+                }).then(response => {
+                    this.displayArray = response
+
+                }).catch(() => {
+                })
+
+
+            },
+            openInNewWindow(url) {
+                window.open(url, '', 'width=1440,height=900,left=150,top=150')
             },
             deleteHostRoute(row) {
 
@@ -236,10 +296,12 @@
             doHostCreate() {
                 let body = {
                     hostKeyWord: this.hostForm.hostKeyWord,
-                    returnFixedValue: this.hostForm.isUsedFixedReturn ? 1 : 0,
+                    routeType: this.hostForm.routeType,
                     fixedResponse: this.hostForm.fixedTextArea,
                     redirectAddress: this.hostForm.redirectAddress,
                     fixedContentType: this.hostForm.contentType,
+                    forwardHost: this.hostForm.forwardHost,
+                    forwardPort: this.hostForm.forwardPort,
                 }
                 const loading = this.$loading({
                     lock: true,
@@ -271,7 +333,7 @@
                 let body = {
                     id: this.hostFormEdit.id,
                     hostKeyWord: this.hostFormEdit.hostKeyWord,
-                    returnFixedValue: this.hostFormEdit.isUsedFixedReturn ? 1 : 0,
+                    returnFixedValue: this.hostFormEdit.routeType,
                     fixedResponse: this.hostFormEdit.fixedTextArea,
                     redirectAddress: this.hostFormEdit.redirectAddress,
                     fixedContentType: this.hostFormEdit.contentType,
@@ -308,10 +370,12 @@
             openHostCreateBlog() {
                 this.hostForm = {
                     hostKeyWord: '',
-                    isUsedFixedReturn: false,
+                    routeType: '2',
                     fixedTextArea: '',
                     contentType: '',
-                    redirectAddress: ''
+                    redirectAddress: '',
+                    forwardHost: '',
+                    forwardPort: 80
                 }
                 this.hostCreateBlog = true
             },
@@ -347,7 +411,7 @@
                 this.hostFormEdit = {
                     id: row.id,
                     hostKeyWord: row.hostKeyWord,
-                    isUsedFixedReturn: row.returnFixedValue == 1,
+                    routeType: row.returnFixedValue == 1,
                     fixedTextArea: row.fixedResponse,
                     contentType: row.fixedContentType,
                     redirectAddress: row.redirectAddress
@@ -358,10 +422,12 @@
                 this.hostFormEdit = {
                     id: '',
                     hostKeyWord: '',
-                    isUsedFixedReturn: false,
+                    routeType: '2',
                     fixedTextArea: '',
                     contentType: '',
-                    redirectAddress: ''
+                    redirectAddress: '',
+                    forwardHost: '',
+                    forwardPort: 80
                 }
                 this.hostCreateBlogEdit = false
             }
@@ -369,6 +435,7 @@
         }, mounted() {
             this.currentHost = window.runtimeConfig.BASE_REQUEST_PATH
             this.getHostList()
+            this.getServiceList()
         }
     }
 </script>
