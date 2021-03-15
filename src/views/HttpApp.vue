@@ -13,11 +13,8 @@
                     </template>
                 </el-table-column>
                 <el-table-column label="路由操作">
-                    <template slot-scope="scope"><span style="text-align: left">{{ scope.row.returnFixedValue==0?'重定向至地址':'返回固定值' }}</span>
-                    </template>
-                </el-table-column>
-                <el-table-column label="重定向地址">
-                    <template slot-scope="scope"><span style="text-align: left">{{ scope.row.redirectAddress==''?'未设置':scope.row.redirectAddress }}</span>
+                    <template slot-scope="scope"><span
+                            style="text-align: left">{{ routeTypeCN(scope.row.routeType)}}</span>
                     </template>
                 </el-table-column>
                 <el-table-column label="操作">
@@ -38,14 +35,14 @@
             </el-pagination>
         </el-col>
 
-        <el-dialog :close-on-press-escape="false" :close-on-click-modal="false" title="新增域名规则"
+        <el-dialog top="6vh"  :close-on-press-escape="false" :close-on-click-modal="false" title="新增域名规则"
                    :visible.sync="hostCreateBlog" width="40%">
             <el-form label-position="top">
                 <el-form-item label="域名包含字符">
                     <span style="display:block;font-size: 13px;color: #409EFF;padding: 10px">
                          提示：规则将匹配类似{{hostForm.hostKeyWord}}.abc.com或{{hostForm.hostKeyWord}}.abc.cn等域名
                     </span>
-                    <el-input style="width: 60%" v-model="hostForm.hostKeyWord"></el-input>
+                    <el-input ref="routeKey" style="width: 60%" v-model="hostForm.hostKeyWord"></el-input>
                 </el-form-item>
 
                 <el-form-item label="该规则下,使用固定返回值">
@@ -107,7 +104,7 @@
                         <el-table-column label="操作" width="400px">
 
                             <template slot-scope="scope">
-                                <el-button size="mini" type="primary"  @click="chooseService(scope.row)" >
+                                <el-button size="mini" type="primary" @click="chooseService(scope.row)">
                                     选择
                                 </el-button>
                             </template>
@@ -122,7 +119,7 @@
             </div>
         </el-dialog>
 
-        <el-dialog :close-on-press-escape="false" :close-on-click-modal="false" title="编辑域名规则"
+        <el-dialog top="6vh" :close-on-press-escape="false" :close-on-click-modal="false" title="编辑域名规则"
                    :visible.sync="hostCreateBlogEdit" width="40%">
             <el-form label-position="top">
                 <el-form-item label="域名包含字符">
@@ -133,17 +130,12 @@
                 </el-form-item>
 
                 <el-form-item label="该规则下,使用固定返回值">
-
-                    <el-switch
-                            active-text="是"
-                            inactive-text="否"
-                            v-model="hostFormEdit.routeType"
-                    >
-                    </el-switch>
-
+                    <el-radio v-model="hostFormEdit.routeType" @change="focusForward" label="2">请求转发</el-radio>
+                    <el-radio v-model="hostFormEdit.routeType" label="0">重定向</el-radio>
+                    <el-radio v-model="hostFormEdit.routeType" label="1">固定值返回</el-radio>
                 </el-form-item>
 
-                <el-form-item label="消息类型" v-show="hostFormEdit.routeType">
+                <el-form-item label="消息类型" v-show="hostFormEdit.routeType=='1'">
                     <el-select v-model="hostFormEdit.contentType" placeholder="请选择">
                         <el-option
                                 v-for="item in options"
@@ -154,7 +146,7 @@
                     </el-select>
                 </el-form-item>
 
-                <el-form-item label="固定返回值" v-show="hostFormEdit.routeType">
+                <el-form-item label="固定返回值" v-show="hostFormEdit.routeType=='1'">
                     <el-input
                             style="font-family: 'Fira Code'"
                             resize="none"
@@ -165,13 +157,36 @@
                     </el-input>
                 </el-form-item>
 
-                <el-form-item label="重定向地址" v-show="!hostFormEdit.routeType">
+                <el-form-item label="重定向地址" v-show="hostFormEdit.routeType=='0'">
                     <el-input style="width: 60%" v-model="hostFormEdit.redirectAddress"></el-input>
                     <el-button size="mini" type="primary" style="margin-left: 15px"
                                @click="openInNewWindow(hostFormEdit.redirectAddress)">测试
                     </el-button>
                 </el-form-item>
 
+                <el-form-item label="请求转发地址" v-show="hostFormEdit.routeType=='2'">
+                    <span>转发至端口：{{ this.hostFormEdit.forwardPort}}</span>
+                    <el-table :data="displayArray" style="margin: 0">
+                        <el-table-column label="监听端口" width="100px">
+                            <template slot-scope="scope"><span style="text-align: left">{{ scope.row.port }}</span>
+                            </template>
+                        </el-table-column>
+                        <el-table-column label="服务关联记录" width="200px">
+                            <template slot-scope="scope"><span
+                                    style="">{{ scope.row.routeTo==null?'未关联过服务':scope.row.routeTo}}</span></template>
+                        </el-table-column>
+
+
+                        <el-table-column label="操作" width="400px">
+
+                            <template slot-scope="scope">
+                                <el-button size="mini" type="primary" @click="chooseServiceForEdit(scope.row)">
+                                    选择
+                                </el-button>
+                            </template>
+                        </el-table-column>
+                    </el-table>
+                </el-form-item>
             </el-form>
             <div slot="footer" class="dialog-footer">
                 <el-button @click="closeHostConfigDialog">取 消</el-button>
@@ -207,7 +222,7 @@
                     contentType: 'application/json',
                     redirectAddress: '',
                     forwardHost: '',
-                    forwardPort: 80
+                    forwardPort: 0
                 },
                 hostFormEdit: {
                     id: '',
@@ -217,7 +232,7 @@
                     contentType: 'application/json',
                     redirectAddress: '',
                     forwardHost: '',
-                    forwardPort: 80
+                    forwardPort: 0
                 },
                 options: [
                     {
@@ -239,8 +254,23 @@
             }
         },
         methods: {
-            chooseService(x){
-                this.hostForm.forwardPort=x.port
+            routeTypeCN(code) {
+                if (code == 0) {
+                    return '重定向'
+                }
+                if (code == 1) {
+                    return '固定值'
+                }
+                if (code == 2) {
+                    return '转发'
+                }
+                return '未知'
+            },
+            chooseService(x) {
+                this.hostForm.forwardPort = x.port
+            },
+            chooseServiceForEdit(x) {
+                this.hostFormEdit.forwardPort = x.port
             },
             focusForward(x) {
                 console.log(x);
@@ -303,6 +333,16 @@
                     forwardHost: this.hostForm.forwardHost,
                     forwardPort: this.hostForm.forwardPort,
                 }
+                if ('' == body.hostKeyWord) {
+                    this.$message.error('关键字不能为空')
+                    this.$refs['routeKey'].focus()
+                    return
+                }
+
+                if (0 == body.forwardPort) {
+                    this.$message.error('未选择转发至端口')
+                    return
+                }
                 const loading = this.$loading({
                     lock: true,
                     text: '加载中...',
@@ -333,11 +373,25 @@
                 let body = {
                     id: this.hostFormEdit.id,
                     hostKeyWord: this.hostFormEdit.hostKeyWord,
-                    returnFixedValue: this.hostFormEdit.routeType,
+                    routeType: this.hostFormEdit.routeType,
                     fixedResponse: this.hostFormEdit.fixedTextArea,
                     redirectAddress: this.hostFormEdit.redirectAddress,
                     fixedContentType: this.hostFormEdit.contentType,
+                    forwardHost: this.hostFormEdit.forwardHost,
+                    forwardPort: this.hostFormEdit.forwardPort
                 }
+
+                if ('' == body.hostKeyWord) {
+                    this.$message.error('关键字不能为空')
+                    this.$refs['routeKey'].focus()
+                    return
+                }
+
+                if (0 == body.forwardPort) {
+                    this.$message.error('未选择转发至端口')
+                    return
+                }
+
                 const loading = this.$loading({
                     lock: true,
                     text: '加载中...',
@@ -375,7 +429,7 @@
                     contentType: '',
                     redirectAddress: '',
                     forwardHost: '',
-                    forwardPort: 80
+                    forwardPort: 0
                 }
                 this.hostCreateBlog = true
             },
@@ -408,13 +462,16 @@
                 })
             },
             editHostConfig(row) {
+
                 this.hostFormEdit = {
                     id: row.id,
                     hostKeyWord: row.hostKeyWord,
-                    routeType: row.returnFixedValue == 1,
+                    routeType: row.routeType+'',
                     fixedTextArea: row.fixedResponse,
                     contentType: row.fixedContentType,
-                    redirectAddress: row.redirectAddress
+                    redirectAddress: row.redirectAddress,
+                    forwardHost: row.forwardHost,
+                    forwardPort: row.forwardPort
                 }
                 this.hostCreateBlogEdit = true
             },
@@ -427,7 +484,7 @@
                     contentType: '',
                     redirectAddress: '',
                     forwardHost: '',
-                    forwardPort: 80
+                    forwardPort: 0
                 }
                 this.hostCreateBlogEdit = false
             }
