@@ -35,7 +35,7 @@
             </el-pagination>
         </el-col>
 
-        <el-dialog top="6vh"  :close-on-press-escape="false" :close-on-click-modal="false" title="新增域名规则"
+        <el-dialog top="6vh" :close-on-press-escape="false" :close-on-click-modal="false" title="新增域名规则"
                    :visible.sync="hostCreateBlog" width="40%">
             <el-form label-position="top">
                 <el-form-item label="域名包含字符">
@@ -88,8 +88,11 @@
                     </el-button>
                 </el-form-item>
 
-                <el-form-item label="请求转发地址" v-show="hostForm.routeType=='2'">
-                    <span>转发至端口：{{ this.hostForm.forwardPort}}</span>
+                <el-form-item label="转发目标" v-show="hostForm.routeType=='2'">
+                    <span>转发至端口：{{ this.hostForm.forwardPort==0?'未选择':this.hostForm.forwardPort}}</span>
+                    <el-tooltip class="item" effect="dark" content="目标来源于 '端口监听' 模块" placement="right">
+                        <i  style="color: gray;margin-left: 5px;font-size: 15px;" class="el-icon-question"></i>
+                    </el-tooltip>
                     <el-table :data="displayArray" style="margin: 0">
                         <el-table-column label="监听端口" width="100px">
                             <template slot-scope="scope"><span style="text-align: left">{{ scope.row.port }}</span>
@@ -164,8 +167,11 @@
                     </el-button>
                 </el-form-item>
 
-                <el-form-item label="请求转发地址" v-show="hostFormEdit.routeType=='2'">
-                    <span>转发至端口：{{ this.hostFormEdit.forwardPort}}</span>
+                <el-form-item label="转发目标" v-show="hostFormEdit.routeType=='2'">
+                    <span>转发至端口：{{ this.hostFormEdit.forwardPort==0?'未选择':this.hostFormEdit.forwardPort}}</span>
+                    <el-tooltip class="item" effect="dark" content="目标来源于 '端口监听' 模块" placement="right">
+                        <i  style="color: gray;margin-left: 5px;font-size: 15px;" class="el-icon-question"></i>
+                    </el-tooltip>
                     <el-table :data="displayArray" style="margin: 0">
                         <el-table-column label="监听端口" width="100px">
                             <template slot-scope="scope"><span style="text-align: left">{{ scope.row.port }}</span>
@@ -292,6 +298,9 @@
 
             },
             openInNewWindow(url) {
+                if (url.indexOf('http://')==-1){
+                    url='http://'+url
+                }
                 window.open(url, '', 'width=1440,height=900,left=150,top=150')
             },
             deleteHostRoute(row) {
@@ -466,7 +475,7 @@
                 this.hostFormEdit = {
                     id: row.id,
                     hostKeyWord: row.hostKeyWord,
-                    routeType: row.routeType+'',
+                    routeType: row.routeType + '',
                     fixedTextArea: row.fixedResponse,
                     contentType: row.fixedContentType,
                     redirectAddress: row.redirectAddress,
