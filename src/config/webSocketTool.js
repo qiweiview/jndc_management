@@ -28,9 +28,10 @@ websocket4v.parseMessage = (x) => {
             }
         })
     } else {
+        console.log("数据",x);
         Notification.info({
             title: '通知',
-            message: x,
+            message: obj.data,
             position: 'bottom-right'
         })
     }
