@@ -21,6 +21,7 @@
                     <template slot-scope="scope">
                         <el-button size="mini" type="info" @click="editHostConfig(scope.row)">编 辑</el-button>
                         <el-button size="mini" type="danger" @click="deleteHostRoute(scope.row)">删 除</el-button>
+                        <el-button size="mini" type="success" @click="openRouteAddress(scope.row)">访 问</el-button>
                     </template>
                 </el-table-column>
             </el-table>
@@ -260,6 +261,9 @@
             }
         },
         methods: {
+            openRouteAddress(x){
+                window.open(x.hostKeyWord+"."+window.location.host)
+            },
             routeTypeCN(code) {
                 if (code == 0) {
                     return '重定向'
