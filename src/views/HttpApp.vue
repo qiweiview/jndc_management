@@ -92,7 +92,7 @@
                 <el-form-item label="转发目标" v-show="hostForm.routeType=='2'">
                     <span>转发至端口：{{ this.hostForm.forwardPort==0?'未选择':this.hostForm.forwardPort}}</span>
                     <el-tooltip class="item" effect="dark" content="目标来源于 '端口监听' 模块" placement="right">
-                        <i  style="color: gray;margin-left: 5px;font-size: 15px;" class="el-icon-question"></i>
+                        <i style="color: gray;margin-left: 5px;font-size: 15px;" class="el-icon-question"></i>
                     </el-tooltip>
                     <el-table :data="displayArray" style="margin: 0">
                         <el-table-column label="监听端口" width="100px">
@@ -171,7 +171,7 @@
                 <el-form-item label="转发目标" v-show="hostFormEdit.routeType=='2'">
                     <span>转发至端口：{{ this.hostFormEdit.forwardPort==0?'未选择':this.hostFormEdit.forwardPort}}</span>
                     <el-tooltip class="item" effect="dark" content="目标来源于 '端口监听' 模块" placement="right">
-                        <i  style="color: gray;margin-left: 5px;font-size: 15px;" class="el-icon-question"></i>
+                        <i style="color: gray;margin-left: 5px;font-size: 15px;" class="el-icon-question"></i>
                     </el-tooltip>
                     <el-table :data="displayArray" style="margin: 0">
                         <el-table-column label="监听端口" width="100px">
@@ -261,8 +261,11 @@
             }
         },
         methods: {
-            openRouteAddress(x){
-                window.open(x.hostKeyWord+"."+window.location.host)
+            openRouteAddress(x) {
+                let host = window.location.host
+                let end = host.indexOf(":")
+                let nHost =window.location.protocol+'//'+ x.hostKeyWord + "." +host.substring(0, end)
+                window.open(nHost )
             },
             routeTypeCN(code) {
                 if (code == 0) {
@@ -302,8 +305,8 @@
 
             },
             openInNewWindow(url) {
-                if (url.indexOf('http://')==-1){
-                    url='http://'+url
+                if (url.indexOf('http://') == -1) {
+                    url = 'http://' + url
                 }
                 window.open(url, '', 'width=1440,height=900,left=150,top=150')
             },
@@ -352,7 +355,7 @@
                     return
                 }
 
-                if (0 == body.forwardPort) {
+                if (body.routeType==2&&0 == body.forwardPort) {
                     this.$message.error('未选择转发至端口')
                     return
                 }
@@ -400,7 +403,7 @@
                     return
                 }
 
-                if (0 == body.forwardPort) {
+                if (body.routeType==2&&0 == body.forwardPort) {
                     this.$message.error('未选择转发至端口')
                     return
                 }
