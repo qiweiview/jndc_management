@@ -83,9 +83,18 @@
                 </el-form-item>
 
                 <el-form-item label="重定向地址" v-show="hostForm.routeType=='0'">
-                    <el-input style="width: 60%" v-model="hostForm.redirectAddress"></el-input>
+                    <el-select v-model="hostForm.forwardProtocol" placeholder="请选择" style="width: 15%" >
+                        <el-option
+
+                                v-for="item in protocols"
+                                :key="item.value"
+                                :label="item.label"
+                                :value="item.value">
+                        </el-option>
+                    </el-select>
+                    <el-input style="width: 60%;margin-left: 5px" v-model="hostForm.redirectAddress"></el-input>
                     <el-button size="mini" type="primary" style="margin-left: 15px"
-                               @click="openInNewWindow(hostForm.redirectAddress)">测试
+                               @click="openInNewWindow(hostForm.forwardProtocol+hostForm.redirectAddress)">测试
                     </el-button>
                 </el-form-item>
 
@@ -164,7 +173,7 @@
                 <el-form-item label="重定向地址" v-show="hostFormEdit.routeType=='0'">
                     <el-input style="width: 60%" v-model="hostFormEdit.redirectAddress"></el-input>
                     <el-button size="mini" type="primary" style="margin-left: 15px"
-                               @click="openInNewWindow(hostFormEdit.redirectAddress)">测试
+                               @click="openInNewWindow(hostFormEdit.forwardProtocol+hostFormEdit.redirectAddress)">测试
                     </el-button>
                 </el-form-item>
 
@@ -213,6 +222,13 @@
         name: "serviceList",
         data() {
             return {
+                protocols: [{
+                    value: 'http://',
+                    label: 'http://'
+                }, {
+                    value: 'https://',
+                    label: 'https://'
+                }],
                 displayArray: [],
                 searchKey: '',
                 hostList: [],
@@ -229,7 +245,8 @@
                     contentType: 'application/json',
                     redirectAddress: '',
                     forwardHost: '',
-                    forwardPort: 0
+                    forwardPort: 0,
+                    forwardProtocol:'http://'
                 },
                 hostFormEdit: {
                     id: '',
@@ -239,7 +256,8 @@
                     contentType: 'application/json',
                     redirectAddress: '',
                     forwardHost: '',
-                    forwardPort: 0
+                    forwardPort: 0,
+                    forwardProtocol:'http://'
                 },
                 options: [
                     {
@@ -305,10 +323,8 @@
 
             },
             openInNewWindow(url) {
-                if (url.indexOf('http://') == -1) {
-                    url = 'http://' + url
-                }
-                window.open(url, '', 'width=1440,height=900,left=150,top=150')
+                console.log(url);
+                window.open(url)
             },
             deleteHostRoute(row) {
 
@@ -348,6 +364,7 @@
                     fixedContentType: this.hostForm.contentType,
                     forwardHost: this.hostForm.forwardHost,
                     forwardPort: this.hostForm.forwardPort,
+                    forwardProtocol:this.hostForm.forwardProtocol
                 }
                 if ('' == body.hostKeyWord) {
                     this.$message.error('关键字不能为空')
@@ -394,7 +411,8 @@
                     redirectAddress: this.hostFormEdit.redirectAddress,
                     fixedContentType: this.hostFormEdit.contentType,
                     forwardHost: this.hostFormEdit.forwardHost,
-                    forwardPort: this.hostFormEdit.forwardPort
+                    forwardPort: this.hostFormEdit.forwardPort,
+                    forwardProtocol:this.hostFormEdit.forwardProtocol
                 }
 
                 if ('' == body.hostKeyWord) {
@@ -445,7 +463,8 @@
                     contentType: '',
                     redirectAddress: '',
                     forwardHost: '',
-                    forwardPort: 0
+                    forwardPort: 0,
+                    forwardProtocol:'http://'
                 }
                 this.hostCreateBlog = true
             },
@@ -487,7 +506,8 @@
                     contentType: row.fixedContentType,
                     redirectAddress: row.redirectAddress,
                     forwardHost: row.forwardHost,
-                    forwardPort: row.forwardPort
+                    forwardPort: row.forwardPort,
+                    forwardProtocol:row.forwardProtocol
                 }
                 this.hostCreateBlogEdit = true
             },
@@ -500,7 +520,8 @@
                     contentType: '',
                     redirectAddress: '',
                     forwardHost: '',
-                    forwardPort: 0
+                    forwardPort: 0,
+                    forwardProtocol:'http://'
                 }
                 this.hostCreateBlogEdit = false
             }
