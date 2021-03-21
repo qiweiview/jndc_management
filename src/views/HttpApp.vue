@@ -73,6 +73,7 @@
 
                 <el-form-item label="固定返回值" v-show="hostForm.routeType=='1'">
                     <el-input
+                            v-show="hostForm.contentType=='text/plain'||hostForm.contentType=='text/html'"
                             style="font-family: 'Fira Code'"
                             resize="none"
                             type="textarea"
@@ -83,7 +84,7 @@
                 </el-form-item>
 
                 <el-form-item label="重定向地址" v-show="hostForm.routeType=='0'">
-                    <el-select v-model="hostForm.forwardProtocol" placeholder="请选择" style="width: 15%" >
+                    <el-select v-model="hostForm.forwardProtocol" placeholder="请选择" style="width: 15%">
                         <el-option
 
                                 v-for="item in protocols"
@@ -171,6 +172,15 @@
                 </el-form-item>
 
                 <el-form-item label="重定向地址" v-show="hostFormEdit.routeType=='0'">
+                    <el-select v-model="hostFormEdit.forwardProtocol" placeholder="请选择" style="width: 15%">
+                        <el-option
+
+                                v-for="item in protocols"
+                                :key="item.value"
+                                :label="item.label"
+                                :value="item.value">
+                        </el-option>
+                    </el-select>
                     <el-input style="width: 60%" v-model="hostFormEdit.redirectAddress"></el-input>
                     <el-button size="mini" type="primary" style="margin-left: 15px"
                                @click="openInNewWindow(hostFormEdit.forwardProtocol+hostFormEdit.redirectAddress)">测试
@@ -215,10 +225,12 @@
 </template>
 
 <script>
-
     import request from "@/config/requestConfig";
 
     export default {
+        components: {
+
+        },
         name: "serviceList",
         data() {
             return {
@@ -246,7 +258,7 @@
                     redirectAddress: '',
                     forwardHost: '',
                     forwardPort: 0,
-                    forwardProtocol:'http://'
+                    forwardProtocol: 'http://'
                 },
                 hostFormEdit: {
                     id: '',
@@ -257,7 +269,7 @@
                     redirectAddress: '',
                     forwardHost: '',
                     forwardPort: 0,
-                    forwardProtocol:'http://'
+                    forwardProtocol: 'http://'
                 },
                 options: [
                     {
@@ -282,8 +294,8 @@
             openRouteAddress(x) {
                 let host = window.location.host
                 let end = host.indexOf(":")
-                let nHost =window.location.protocol+'//'+ x.hostKeyWord + "." +host.substring(0, end)
-                window.open(nHost )
+                let nHost = window.location.protocol + '//' + x.hostKeyWord + "." + host.substring(0, end)
+                window.open(nHost)
             },
             routeTypeCN(code) {
                 if (code == 0) {
@@ -364,7 +376,7 @@
                     fixedContentType: this.hostForm.contentType,
                     forwardHost: this.hostForm.forwardHost,
                     forwardPort: this.hostForm.forwardPort,
-                    forwardProtocol:this.hostForm.forwardProtocol
+                    forwardProtocol: this.hostForm.forwardProtocol
                 }
                 if ('' == body.hostKeyWord) {
                     this.$message.error('关键字不能为空')
@@ -372,7 +384,7 @@
                     return
                 }
 
-                if (body.routeType==2&&0 == body.forwardPort) {
+                if (body.routeType == 2 && 0 == body.forwardPort) {
                     this.$message.error('未选择转发至端口')
                     return
                 }
@@ -412,7 +424,7 @@
                     fixedContentType: this.hostFormEdit.contentType,
                     forwardHost: this.hostFormEdit.forwardHost,
                     forwardPort: this.hostFormEdit.forwardPort,
-                    forwardProtocol:this.hostFormEdit.forwardProtocol
+                    forwardProtocol: this.hostFormEdit.forwardProtocol
                 }
 
                 if ('' == body.hostKeyWord) {
@@ -421,7 +433,7 @@
                     return
                 }
 
-                if (body.routeType==2&&0 == body.forwardPort) {
+                if (body.routeType == 2 && 0 == body.forwardPort) {
                     this.$message.error('未选择转发至端口')
                     return
                 }
@@ -460,11 +472,11 @@
                     hostKeyWord: '',
                     routeType: '2',
                     fixedTextArea: '',
-                    contentType: '',
+                    contentType: 'application/json',
                     redirectAddress: '',
                     forwardHost: '',
                     forwardPort: 0,
-                    forwardProtocol:'http://'
+                    forwardProtocol: 'http://'
                 }
                 this.hostCreateBlog = true
             },
@@ -507,7 +519,7 @@
                     redirectAddress: row.redirectAddress,
                     forwardHost: row.forwardHost,
                     forwardPort: row.forwardPort,
-                    forwardProtocol:row.forwardProtocol
+                    forwardProtocol: row.forwardProtocol
                 }
                 this.hostCreateBlogEdit = true
             },
@@ -517,11 +529,11 @@
                     hostKeyWord: '',
                     routeType: '2',
                     fixedTextArea: '',
-                    contentType: '',
+                    contentType: 'application/json',
                     redirectAddress: '',
                     forwardHost: '',
                     forwardPort: 0,
-                    forwardProtocol:'http://'
+                    forwardProtocol: 'http://'
                 }
                 this.hostCreateBlogEdit = false
             }
