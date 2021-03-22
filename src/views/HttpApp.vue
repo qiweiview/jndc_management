@@ -36,7 +36,8 @@
             </el-pagination>
         </el-col>
 
-        <el-dialog top="6vh" :close-on-press-escape="false" :close-on-click-modal="false" title="新增域名规则"
+        <!--=====================新增=============-->
+        <el-dialog top="3vh" :close-on-press-escape="false" :close-on-click-modal="false" title="新增域名规则"
                    :visible.sync="hostCreateBlog" width="40%">
             <el-form label-position="top">
                 <el-form-item label="域名包含字符">
@@ -72,15 +73,18 @@
                 </el-form-item>
 
                 <el-form-item label="固定返回值" v-show="hostForm.routeType=='1'">
-                    <el-input
-                            v-show="hostForm.contentType=='text/plain'||hostForm.contentType=='text/html'"
-                            style="font-family: 'Fira Code'"
-                            resize="none"
-                            type="textarea"
-                            :rows="6"
-                            placeholder="请输入内容"
-                            v-model="hostForm.fixedTextArea">
-                    </el-input>
+                    <editor :options="{ maxLines: 13,autoScrollEditorIntoView: true}" v-model="hostForm.fixedTextArea"
+                            @init="editorInit" :lang="mapLang(hostForm.contentType)"
+                            theme="chrome" width="100%" height="200px"></editor>
+                    <!--                    <el-input-->
+                    <!--                            v-show="hostForm.contentType=='text/plain'||hostForm.contentType=='text/html'"-->
+                    <!--                            style="font-family: 'Fira Code'"-->
+                    <!--                            resize="none"-->
+                    <!--                            type="textarea"-->
+                    <!--                            :rows="6"-->
+                    <!--                            placeholder="请输入内容"-->
+                    <!--                            v-model="hostForm.fixedTextArea">-->
+                    <!--                    </el-input>-->
                 </el-form-item>
 
                 <el-form-item label="重定向地址" v-show="hostForm.routeType=='0'">
@@ -133,7 +137,8 @@
             </div>
         </el-dialog>
 
-        <el-dialog top="6vh" :close-on-press-escape="false" :close-on-click-modal="false" title="编辑域名规则"
+        <!-- ================== 编辑 ====================================-->
+        <el-dialog top="3vh" :close-on-press-escape="false" :close-on-click-modal="false" title="编辑域名规则"
                    :visible.sync="hostCreateBlogEdit" width="40%">
             <el-form label-position="top">
                 <el-form-item label="域名包含字符">
@@ -161,14 +166,18 @@
                 </el-form-item>
 
                 <el-form-item label="固定返回值" v-show="hostFormEdit.routeType=='1'">
-                    <el-input
-                            style="font-family: 'Fira Code'"
-                            resize="none"
-                            type="textarea"
-                            :rows="6"
-                            placeholder="请输入内容"
-                            v-model="hostFormEdit.fixedTextArea">
-                    </el-input>
+                    <editor :options="{ showPrintMargin: false,maxLines: 13,autoScrollEditorIntoView: true}"
+                            v-model="hostFormEdit.fixedTextArea" @init="editorInit"
+                            :lang="mapLang(hostFormEdit.contentType)"
+                            theme="chrome" width="100%" height="200px"></editor>
+                    <!--                    <el-input-->
+                    <!--                            style="font-family: 'Fira Code'"-->
+                    <!--                            resize="none"-->
+                    <!--                            type="textarea"-->
+                    <!--                            :rows="6"-->
+                    <!--                            placeholder="请输入内容"-->
+                    <!--                            v-model="hostFormEdit.fixedTextArea">-->
+                    <!--                    </el-input>-->
                 </el-form-item>
 
                 <el-form-item label="重定向地址" v-show="hostFormEdit.routeType=='0'">
@@ -229,7 +238,7 @@
 
     export default {
         components: {
-
+            editor: require('vue2-ace-editor')
         },
         name: "serviceList",
         data() {
@@ -291,6 +300,32 @@
             }
         },
         methods: {
+            mapLang(type) {
+                if (type == 'application/json') {
+                    return 'json'
+                } else if (type == 'text/html') {
+                    return 'html'
+                } else if (type == 'application/xml') {
+                    return 'xml'
+                } else if (type == 'application/xml') {
+                    return 'javascript'
+                } else {
+                    return 'text'
+                }
+            },
+            editorInit() {
+                require('brace/ext/language_tools') //language extension prerequsite...
+                require('brace/theme/twilight')
+                require('brace/snippets/javascript') //snippet
+
+                require('brace/mode/html')
+                require('brace/mode/text')
+                require('brace/mode/javascript')    //language
+                require('brace/mode/xml')
+                require('brace/mode/json')
+
+
+            },
             openRouteAddress(x) {
                 let host = window.location.host
                 let end = host.indexOf(":")
