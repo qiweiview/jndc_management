@@ -141,7 +141,7 @@
                     <el-button type="primary" @click="createPortMonitoring">确 定</el-button>
                 </div>
             </el-dialog>
-            <el-dialog title="选择端口关联服务" :visible.sync="portBindDialog" width="25%">
+            <el-dialog title="选择端口关联服务" :visible.sync="portBindDialog" width="35%">
                 <el-table :data="serverChannelList" max-height="250">
                     <el-table-column label="服务名称">
                         <template slot-scope="scope"><span :title="scope.row.id" style="text-align: left">{{ scope.row.name }}</span>

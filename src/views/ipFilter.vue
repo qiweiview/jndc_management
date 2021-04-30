@@ -138,7 +138,7 @@
                 </el-tab-pane>
             </el-tabs>
         </el-col>
-        <el-dialog title="添加IP黑名单" :visible.sync="blackAddPage" width="20%">
+        <el-dialog title="添加IP黑名单" :visible.sync="blackAddPage" width="30%">
             <el-form>
                 <el-form-item label="IP地址">
                     <el-input style="width: 20%" maxlength="3" v-model="ipBlack.a" autocomplete="off"></el-input>
@@ -156,7 +156,7 @@
                 <el-button type="primary" @click="sendAddBlack">确 定</el-button>
             </div>
         </el-dialog>
-        <el-dialog title="添加IP白名单" :visible.sync="whiteAddPage" width="20%">
+        <el-dialog title="添加IP白名单" :visible.sync="whiteAddPage" width="30%">
             <el-form>
                 <el-form-item label="IP地址">
                     <el-input style="width: 20%" maxlength="3" v-model="ipWhite.a" autocomplete="off"></el-input>
