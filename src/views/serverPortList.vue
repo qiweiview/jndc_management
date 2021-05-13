@@ -8,8 +8,8 @@
                     <el-button @click="openAddPortDialog" type="success" style="margin-left:15px">添 加</el-button>
                     <el-button @click="getServerPortList" style="margin-left:15px">查 询</el-button>
                     <el-table :data="displayArray" style="margin: 0">
-                        <el-table-column label="编号" width="300px">
-                            <template slot-scope="scope"><span style="text-align: left">{{ scope.row.id }}</span>
+                        <el-table-column label="绑定隧道编号" width="300px">
+                            <template slot-scope="scope"><span style="text-align: left">{{ scope.row.bindClientId }}</span>
                             </template>
                         </el-table-column>
                         <el-table-column label="监听端口" width="100px">

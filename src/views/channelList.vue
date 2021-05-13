@@ -46,7 +46,7 @@
                     <el-button @click="clearChannelRecord" size="mini" type="danger">清 空</el-button>
                     <el-table :data="channelRecordArray" max-height="85vh">
                         <el-table-column label="隧道编号">
-                            <template slot-scope="scope"><span style="text-align: left">{{ scope.row.id }}</span>
+                            <template slot-scope="scope"><span style="text-align: left">{{ scope.row.channelId }}</span>
                             </template>
                         </el-table-column>
                         <el-table-column label="隧道客户端IP">
