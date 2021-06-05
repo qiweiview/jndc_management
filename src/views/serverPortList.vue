@@ -4,10 +4,10 @@
             <el-tabs v-model="activeName" @tab-click="clickTab">
                 <el-tab-pane label="端口监听" name="a">
                     <el-input clearable v-model="searchKey" placeholder="筛选服务器端口号"
-                              style="width:20%"></el-input>
+                              style="width:20%" @change="getServerPortList"></el-input>
                     <el-button @click="openAddPortDialog" type="success" style="margin-left:15px">添 加</el-button>
                     <el-button @click="getServerPortList" style="margin-left:15px">查 询</el-button>
-                    <el-table :data="displayArray" style="margin: 0">
+                    <el-table :data="displayArray" style="margin: 0" max-height="680px">
                         <el-table-column label="绑定隧道编号" width="300px">
                             <template slot-scope="scope"><span style="text-align: left">{{ scope.row.bindClientId }}</span>
                             </template>
@@ -46,7 +46,7 @@
                             <template slot-scope="scope">
                                 <el-tooltip class="item" effect="dark" content="修改处理请求时间段" placement="bottom">
                                     <el-button size="mini" type="info"
-                                               @click="openDateRangeEditDialog(scope.row.id,scope.row.enableDateRange)">编 辑
+                                               @click="openDateRangeEditDialog(scope.row.id,scope.row.enableDateRange,scope.row.name)">编 辑
                                     </el-button>
                                 </el-tooltip>
 
@@ -81,7 +81,7 @@
                 </el-tab-pane>
             </el-tabs>
 
-            <el-dialog title="修改处理请求时间段" :visible.sync="dateRangeEditDialog" width="30%">
+            <el-dialog title="修改处理请求时间段" :visible.sync="dateRangeEditDialog" width="30%"  :close-on-click-modal="false" >
                 <el-form label-position="top" :model="portMonitoring">
                     <el-form-item label="接收请求时间段">
                         <el-time-picker
@@ -99,13 +99,19 @@
                             <i class="el-icon-question"></i>
                         </el-tooltip>
                     </el-form-item>
+
+                    <el-form-item label="备注">
+                        <el-input v-model="portMonitoring.name" maxlength="10" autocomplete="off"></el-input>
+                    </el-form-item>
                 </el-form>
                 <div slot="footer" class="dialog-footer">
                     <el-button @click="closeDateRangeEditDialog">取 消</el-button>
                     <el-button type="primary" @click="doDateRangeEdit">确 定</el-button>
                 </div>
             </el-dialog>
-            <el-dialog title="添加端口监听" :visible.sync="addPortDialog" width="30%">
+
+
+            <el-dialog title="添加端口监听" :visible.sync="addPortDialog" width="30%" :close-on-click-modal="false" >
                 <el-form label-position="top" :model="portMonitoring">
                     <el-form-item label="端口">
                         <el-input-number v-model="portMonitoring.port" :min="0" :max="16384"
@@ -141,8 +147,8 @@
                     <el-button type="primary" @click="createPortMonitoring">确 定</el-button>
                 </div>
             </el-dialog>
-            <el-dialog title="选择端口关联服务" :visible.sync="portBindDialog" width="35%">
-                <el-table :data="serverChannelList" max-height="250">
+            <el-dialog title="选择端口关联服务" :visible.sync="portBindDialog" width="45%" :close-on-click-modal="false" >
+                <el-table :data="serverChannelList" max-height="450">
                     <el-table-column label="服务名称">
                         <template slot-scope="scope"><span :title="scope.row.id" style="text-align: left">{{ scope.row.name }}</span>
                         </template>
@@ -201,7 +207,7 @@
         methods: {
             doDateRangeEdit(){
                 let enableDateRange=this.chooseDateRange[0] + ',' + this.chooseDateRange[1]
-                let body={enableDateRange:enableDateRange,serverPortId: this.currentId}
+                let body={enableDateRange:enableDateRange,serverPortId: this.currentId,remark:this.portMonitoring.name}
                 request({
                     url: '/doDateRangeEdit',
                     method: 'post',
@@ -222,8 +228,9 @@
             closeDateRangeEditDialog(){
                 this.dateRangeEditDialog=false
             },
-            openDateRangeEditDialog(id,dateRangeStr){
+            openDateRangeEditDialog(id,dateRangeStr,remark){
                 this.currentId=id
+                this.portMonitoring.name=remark
                 this.chooseDateRange=[dateRangeStr.split(",")[0],dateRangeStr.split(",")[1]]
                 this.dateRangeEditDialog=true
             },
@@ -428,10 +435,9 @@
                     request({
                         url: '/getServerPortList',
                         method: 'post',
-                        data: {serverPort: this.portSelect}
+                        data: {port: this.searchKey}
                     }).then(response => {
-                        this.storeArray = response
-                        this.conditionalRendering()
+                        this.displayArray = response
                         loading.close()
                     }).catch(() => {
                         loading.close()
@@ -458,6 +464,9 @@
 
         }
         , mounted() {
+            if (typeof this.$route.query.port!='undefined'){
+                this.searchKey=this.$route.query.port
+            }
             this.getServerPortList()
             websocket.registerPage('serverPortList', '端口监听', this.getServerPortList)
         }

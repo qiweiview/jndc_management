@@ -17,6 +17,13 @@
                             style="text-align: left">{{ routeTypeCN(scope.row.routeType)}}</span>
                     </template>
                 </el-table-column>
+                <el-table-column label="转发端口">
+                    <template slot-scope="scope"><span
+                            @click="routeToPortListPage(scope.row.forwardPort)"
+                            :style="{'text-align': 'left','cursor': scope.row.forwardPort==0?'-':'pointer'}">{{ scope.row.forwardPort==0?'-':scope.row.forwardPort}}</span>
+                    </template>
+                </el-table-column>
+
                 <el-table-column label="操作">
                     <template slot-scope="scope">
                         <el-button size="mini" type="info" @click="editHostConfig(scope.row)">编 辑</el-button>
@@ -38,7 +45,7 @@
 
         <!--=====================新增=============-->
         <el-dialog top="3vh" :close-on-press-escape="false" :close-on-click-modal="false" title="新增域名规则"
-                   :visible.sync="hostCreateBlog" width="40%">
+                   :visible.sync="hostCreateBlog" width="55%">
             <el-form label-position="top">
                 <el-form-item label="域名包含字符">
                     <span style="display:block;font-size: 13px;color: #409EFF;padding: 10px">
@@ -51,18 +58,10 @@
                     <el-radio v-model="hostForm.routeType" @change="focusForward" label="2">请求转发</el-radio>
                     <el-radio v-model="hostForm.routeType" label="0">重定向</el-radio>
                     <el-radio v-model="hostForm.routeType" label="1">固定值返回</el-radio>
-
-                    <!--                    <el-switch-->
-                    <!--                            active-text="是"-->
-                    <!--                            inactive-text="否"-->
-                    <!--                            v-model="hostForm.routeType"-->
-                    <!--                    >-->
-                    <!--                    </el-switch>-->
-
                 </el-form-item>
 
                 <el-form-item label="消息类型" v-show="hostForm.routeType=='1'">
-                    <el-select v-model="hostForm.contentType" placeholder="请选择">
+                    <el-select v-model="hostForm.contentType" placeholder="请选择" @change="changeDefaultContent">
                         <el-option
                                 v-for="item in options"
                                 :key="item.value"
@@ -76,15 +75,6 @@
                     <editor :options="{ maxLines: 13,autoScrollEditorIntoView: true}" v-model="hostForm.fixedTextArea"
                             @init="editorInit" :lang="mapLang(hostForm.contentType)"
                             theme="chrome" width="100%" height="200px"></editor>
-                    <!--                    <el-input-->
-                    <!--                            v-show="hostForm.contentType=='text/plain'||hostForm.contentType=='text/html'"-->
-                    <!--                            style="font-family: 'Fira Code'"-->
-                    <!--                            resize="none"-->
-                    <!--                            type="textarea"-->
-                    <!--                            :rows="6"-->
-                    <!--                            placeholder="请输入内容"-->
-                    <!--                            v-model="hostForm.fixedTextArea">-->
-                    <!--                    </el-input>-->
                 </el-form-item>
 
                 <el-form-item label="重定向地址" v-show="hostForm.routeType=='0'">
@@ -113,6 +103,10 @@
                             <template slot-scope="scope"><span style="text-align: left">{{ scope.row.port }}</span>
                             </template>
                         </el-table-column>
+                        <el-table-column label="备注" width="300px">
+                            <template slot-scope="scope"><span style="text-align: left">{{ scope.row.name }}</span>
+                            </template>
+                        </el-table-column>
                         <el-table-column label="服务关联记录" width="200px">
                             <template slot-scope="scope"><span
                                     style="">{{ scope.row.routeTo==null?'未关联过服务':scope.row.routeTo}}</span></template>
@@ -139,7 +133,7 @@
 
         <!-- ================== 编辑 ====================================-->
         <el-dialog top="3vh" :close-on-press-escape="false" :close-on-click-modal="false" title="编辑域名规则"
-                   :visible.sync="hostCreateBlogEdit" width="40%">
+                   :visible.sync="hostCreateBlogEdit" width="65%">
             <el-form label-position="top">
                 <el-form-item label="域名包含字符">
                      <span style="display:block;font-size: 13px;color: #409EFF;padding: 10px">
@@ -170,14 +164,6 @@
                             v-model="hostFormEdit.fixedTextArea" @init="editorInit"
                             :lang="mapLang(hostFormEdit.contentType)"
                             theme="chrome" width="100%" height="200px"></editor>
-                    <!--                    <el-input-->
-                    <!--                            style="font-family: 'Fira Code'"-->
-                    <!--                            resize="none"-->
-                    <!--                            type="textarea"-->
-                    <!--                            :rows="6"-->
-                    <!--                            placeholder="请输入内容"-->
-                    <!--                            v-model="hostFormEdit.fixedTextArea">-->
-                    <!--                    </el-input>-->
                 </el-form-item>
 
                 <el-form-item label="重定向地址" v-show="hostFormEdit.routeType=='0'">
@@ -201,18 +187,20 @@
                     <el-tooltip class="item" effect="dark" content="目标来源于 '端口监听' 模块" placement="right">
                         <i style="color: gray;margin-left: 5px;font-size: 15px;" class="el-icon-question"></i>
                     </el-tooltip>
-                    <el-table :data="displayArray" style="margin: 0">
+                    <el-table :data="displayArray" style="margin: 0" max-height="280px">
                         <el-table-column label="监听端口" width="100px">
                             <template slot-scope="scope"><span style="text-align: left">{{ scope.row.port }}</span>
                             </template>
                         </el-table-column>
-                        <el-table-column label="服务关联记录" width="200px">
+                        <el-table-column label="备注" width="400px">
+                            <template slot-scope="scope"><span style="text-align: left">{{ scope.row.name }}</span>
+                            </template>
+                        </el-table-column>
+                        <el-table-column label="服务关联记录" width="400px">
                             <template slot-scope="scope"><span
                                     style="">{{ scope.row.routeTo==null?'未关联过服务':scope.row.routeTo}}</span></template>
                         </el-table-column>
-
-
-                        <el-table-column label="操作" width="400px">
+                        <el-table-column label="操作">
 
                             <template slot-scope="scope">
                                 <el-button size="mini" type="primary" @click="chooseServiceForEdit(scope.row)">
@@ -242,6 +230,31 @@
         },
         name: "serviceList",
         data() {
+            let htmlContent  =
+                '<html>\n' +
+                '<head>\n' +
+                '<meta charset="UTF-8" />\n' +
+                '<link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css" />\n' +
+                '</head> \n' +
+                ' <body>\n' +
+                '  <div id="app">\n' +
+                '     {{world}}\n' +
+                '  </div> \n' +
+                '<script src="https://unpkg.com/vue/dist/vue.js"><scriptEnd>\n' +
+                '<script src="https://unpkg.com/element-ui/lib/index.js"><scriptEnd>\n' +
+                '<script>\n' +
+                ' new Vue({\n' +
+                " el: '#app',\n" +
+                'data: function() {\n' +
+                '      return { hello: "world" }\n' +
+                '                 }\n' +
+                ' })\n' +
+                '<scriptEnd>\n' +
+                '</body>\n' +
+                '</html>'
+
+            htmlContent = htmlContent.replace(new RegExp('scriptEnd', 'g'), "/script")
+
             return {
                 protocols: [{
                     value: 'http://',
@@ -282,24 +295,39 @@
                 },
                 options: [
                     {
+                        defaultContent: '{"name":"hello world"}',
                         value: 'application/json'
                     },
                     {
+                        defaultContent: '<key>123</key>',
                         value: 'application/xml'
                     },
                     {
+                        defaultContent: 'let age=18',
                         value: 'application/javascript'
                     },
                     {
+                        defaultContent: 'hello world',
                         value: 'text/plain'
                     },
                     {
+                        defaultContent: htmlContent,
                         value: 'text/html'
                     }
                 ]
             }
         },
         methods: {
+            routeToPortListPage(port){
+                this.$router.push({path:'/management/serverPortList',query:{port:port}})
+            },
+            changeDefaultContent(e) {
+                this.options.forEach(x => {
+                    if (e == x.value) {
+                        this.hostForm.fixedTextArea = x.defaultContent
+                    }
+                })
+            },
             mapLang(type) {
                 if (type == 'application/json') {
                     return 'json'
@@ -346,9 +374,11 @@
             },
             chooseService(x) {
                 this.hostForm.forwardPort = x.port
+                this.doHostCreate()
             },
             chooseServiceForEdit(x) {
                 this.hostFormEdit.forwardPort = x.port
+                this.doHostUpdate()
             },
             focusForward(x) {
                 console.log(x);

@@ -5,7 +5,7 @@
             <el-tabs v-model="activeName" @tab-click="clickTab">
                 <el-tab-pane label="隧道列表" name="a">
                     <el-input clearable v-model="searchKey" placeholder="筛选隧道编号或IP"
-                              style="width:20%"></el-input>
+                              style="width:20%" @change="getServerChannelTable" ></el-input>
                     <el-button @click="getServerChannelTable" style="margin-left:15px">查询</el-button>
                     <el-table :data="displayArray">
                         <el-table-column label="隧道编号">

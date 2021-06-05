@@ -12,7 +12,6 @@
         name: 'App',
         computed: {
             key() {
-                console.log(this.$route.path)
                 return this.$route.path
             }
         }
