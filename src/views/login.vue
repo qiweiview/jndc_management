@@ -11,7 +11,8 @@
                         <el-input v-model="form.name" placeholder="用户名"></el-input>
                     </el-form-item>
                     <el-form-item label="密码">
-                        <el-input @keyup.native.enter="doLogin" v-model="form.passWord" type="password" ref="password" placeholder="密码"></el-input>
+                        <el-input @keyup.native.enter="doLogin" v-model="form.passWord" type="password" ref="password"
+                                  placeholder="密码"></el-input>
                     </el-form-item>
                     <el-form-item style="text-align: right;">
                         <el-button type="primary" @click="doLogin">登录</el-button>
@@ -69,66 +70,55 @@
 </script>
 
 
-<style lang="scss" scoped>
-    $bg: #2d3a4b;
-    $dark_gray: #889aa4;
-    $light_gray: #eee;
+<style scoped>
 
-    .login-container {
-        min-height: 100%;
-        width: 100%;
-        background-color: $bg;
+
+    .login-form {
+        position: relative;
+        width: 520px;
+        max-width: 100%;
+        padding: 160px 35px 0;
+        margin: 0 auto;
         overflow: hidden;
-
-        .login-form {
-            position: relative;
-            width: 520px;
-            max-width: 100%;
-            padding: 160px 35px 0;
-            margin: 0 auto;
-            overflow: hidden;
-        }
-
-        .tips {
-            font-size: 14px;
-            color: #fff;
-            margin-bottom: 10px;
-
-            span {
-                &:first-of-type {
-                    margin-right: 16px;
-                }
-            }
-        }
-
-        .svg-container {
-            padding: 6px 5px 6px 15px;
-            color: $dark_gray;
-            vertical-align: middle;
-            width: 30px;
-            display: inline-block;
-        }
-
-        .title-container {
-            position: relative;
-
-            .title {
-                font-size: 26px;
-                color: $light_gray;
-                margin: 0px auto 40px auto;
-                text-align: center;
-                font-weight: bold;
-            }
-        }
-
-        .show-pwd {
-            position: absolute;
-            right: 10px;
-            top: 7px;
-            font-size: 16px;
-            color: $dark_gray;
-            cursor: pointer;
-            user-select: none;
-        }
     }
+
+    .tips {
+        font-size: 14px;
+        color: #fff;
+        margin-bottom: 10px;
+
+
+    }
+
+    .svg-container {
+        padding: 6px 5px 6px 15px;
+        color: #889aa4;
+        vertical-align: middle;
+        width: 30px;
+        display: inline-block;
+    }
+
+    .title-container {
+        position: relative;
+
+    .title {
+        font-size: 26px;
+        color: #eee;
+        margin: 0px auto 40px auto;
+        text-align: center;
+        font-weight: bold;
+    }
+
+    }
+
+    .show-pwd {
+        position: absolute;
+        right: 10px;
+        top: 7px;
+        font-size: 16px;
+        color: #889aa4;
+        cursor: pointer;
+        user-select: none;
+    }
+
 </style>

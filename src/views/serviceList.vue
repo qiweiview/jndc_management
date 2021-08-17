@@ -23,11 +23,11 @@
                             style="text-align: center">{{ scope.row.belongContextIp }}</span>
                     </template>
                 </el-table-column>
-<!--                <el-table-column label="操作">-->
-<!--                    <template slot-scope="scope">-->
-<!--                        <el-button size="mini" type="danger" @click="pauseService(scope.row.name)">注 销 服 务</el-button>-->
-<!--                    </template>-->
-<!--                </el-table-column>-->
+                <!--                <el-table-column label="操作">-->
+                <!--                    <template slot-scope="scope">-->
+                <!--                        <el-button size="mini" type="danger" @click="pauseService(scope.row.name)">注 销 服 务</el-button>-->
+                <!--                    </template>-->
+                <!--                </el-table-column>-->
             </el-table>
         </el-col>
     </el-row>
@@ -117,8 +117,11 @@
 
         }
         , mounted() {
+            if (typeof (this.$route.query.ip) != 'undefined') {
+                this.searchKey = this.$route.query.ip
+            }
             this.getServiceList()
-            websocket.registerPage('serviceList','服务注册',this.getServiceList)
+            websocket.registerPage('serviceList', '服务注册', this.getServiceList)
         }
     }
 </script>

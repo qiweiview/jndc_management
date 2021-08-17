@@ -13,7 +13,7 @@
                             </template>
                         </el-table-column>
                         <el-table-column label="隧道客户端IP">
-                            <template slot-scope="scope"><span style="">{{ scope.row.channelClientIp }}</span>
+                            <template slot-scope="scope"><span @click="toServicePage(scope.row.channelClientIp)" style="cursor: pointer;color: dodgerblue">{{ scope.row.channelClientIp }}</span>
                             </template>
                         </el-table-column>
                         <el-table-column label="隧道客户端端口">
@@ -112,6 +112,9 @@
             }
         },
         methods: {
+            toServicePage(ip){
+                this.$router.push({path:'/management/services',query:{ip:ip}})
+            },
             clearChannelRecord() {
                 let _this = this
                 this.$confirm('清空连接纪录后将不可恢复?', '提示', {
