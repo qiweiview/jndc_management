@@ -1,14 +1,27 @@
-
 import mxgraph from "@/config/mxgraph";
 
-
-
-export const toolbarItems = [
+let dataList = [
     {
         icon: '/tool_bar_icon/database.png',
-        title: '数据库',
-        width: 64,
-        height: 64,
+        title: '数据',
+    },
+    {
+        icon: '/tool_bar_icon/merge.png',
+        title: '合并',
+    }
+]
+
+const width_config = 128
+const height_config = 128
+const toolbarItems = [];
+
+for (let i = 0; i < dataList.length; i++) {
+    let fs = dataList[i]
+    let sg = {
+        icon: fs.icon,
+        title: fs.title,
+        width: width_config,
+        height: height_config,
         style: {
             fillColor: 'transparent',
             strokeColor: 'transparent',
@@ -18,9 +31,12 @@ export const toolbarItems = [
             verticalAlign: mxgraph.mxConstants.ALIGN_CENTER,
             imageAlign: mxgraph.mxConstants.ALIGN_CENTER,
             imageVerticalAlign: mxgraph.mxConstants.ALIGN_CENTER,
-            width: 64,
-            height: 64,
-            image: '/tool_bar_icon/database.png'
+            width: width_config,
+            height: height_config,
+            image: fs.icon
         }
     }
-]
+    toolbarItems.push(sg)
+}
+
+export default toolbarItems

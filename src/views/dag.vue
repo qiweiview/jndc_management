@@ -1,21 +1,21 @@
 <template>
     <el-row style="padding: 15px">
-        <el-col :xs="6" :sm="6" :md="6" :lg="6" :xl="6">
-            <div id="tool_bar"></div>
+        <el-col :xs="3" :sm="3" :md="3" :lg="3" :xl="3">
+            <!--            <div id="tool_bar"></div>-->
             <div class="customToolbarContainer">
                 <div class="toolbarContainer">
                     <div v-for="item in toolbarItems" :key="item['title']" ref="toolItem">
                         <img :src="item['icon']" :alt="item['title']" style="width: 64px;height: 64px">
-                        <span>{{item['title']}}</span>
+                        <span style="margin-left: 15px">{{item['title']}}</span>
                     </div>
                 </div>
             </div>
         </el-col>
-        <el-col :xs="12" :sm="12" :md="12" :lg="12" :xl="12">
+        <el-col :xs="17" :sm="17" :md="17" :lg="17" :xl="17">
             <div id="g1"
                  style="position:relative;overflow:hidden;width:100%;height:90vh;background:url('grid.gif');cursor:default;"></div>
         </el-col>
-        <el-col :xs="6" :sm="6" :md="6" :lg="6" :xl="6">
+        <el-col :xs="4" :sm="4" :md="4" :lg="4" :xl="4">
             <div>option area</div>
         </el-col>
     </el-row>
@@ -24,13 +24,13 @@
 <script>
     import mxgraph from "@/config/mxgraph";
 
-    import {toolbarItems} from  "@/config/toolbar";
+    import toolbarItems from "@/config/toolbar";
 
     const {
-        mxGraph, mxClient, mxCodec, mxUtils,
+        mxGraph, mxClient, mxUtils,
         mxShape, mxConnectionConstraint, mxPoint,
         mxPolyline, mxRubberband, mxEvent,
-        mxCellState, mxKeyHandler, mxCell, mxGeometry
+         mxKeyHandler, mxUndoManager
     } = mxgraph;
 
     export default {
@@ -40,58 +40,16 @@
         },
         data() {
             return {
+                parent: {},
                 g1: {},
                 graph: {},
-                toolbar:{}
+                toolbar: {},
+                undoManager: {}
             }
         },
         methods: {
-            addCell(toolItem, x, y) {
-                const {width, height} = toolItem
-                const styleObj = toolItem['style']
-
-                const style = Object.keys(styleObj).map((attr) => `${attr}=${styleObj[attr]}`).join(';')
-                const parent = this.graph.getDefaultParent()
-
-
-                this.graph.getModel().beginUpdate()
-                try {
-                    let vertex = this.graph.insertVertex(parent, null, null, x, y, width, height,style)
-                    vertex.title = toolItem['title']
-                } finally {
-                    this.graph.getModel().endUpdate()
-                }
-            },
-            initToolbar() {
-                const domArray = this.$refs.toolItem
-
-                if (!(domArray instanceof Array) || domArray.length <= 0) {
-                    return
-                }
-                domArray.forEach((dom, domIndex) => {
-                    const toolItem = this.toolbarItems[domIndex]
-                    const {width, height} = toolItem
-
-                    const dropHandler = (graph, evt, cell, x, y) => {
-                        this.addCell(toolItem, x, y)
-                    }
-                    const createDragPreview = () => {
-                        const elt = document.createElement('div')
-
-                        elt.style.border = '2px dotted black'
-                        elt.style.width = `${width}px`
-                        elt.style.height = `${height}px`
-                        return elt
-                    }
-
-                    mxUtils.makeDraggable(dom, this.graph, dropHandler, createDragPreview(), 0, 0, false, true)
-                })
-
-                // this.toolbar = new mxToolbar(document.getElementById("tool_bar"));
-                // this.toolbar.enabled = false
-                // this.addToolBar('https://emojipedia.org/static/img/logo/emojipedia-logo-64.f24011dcde3f.png', 40, 40, 'shape=hexagon');
-            },
             initDag() {
+                let that = this
 
                 // eslint-disable-next-line no-unused-vars
                 mxGraph.prototype.getAllConnectionConstraints = function (terminal, source) {
@@ -134,27 +92,47 @@
 
 
                     let MxGraph = mxGraph;
-                    let MxCodec = mxCodec;
                     this.g1 = document.getElementById("g1")
                     this.graph = new MxGraph(this.g1);
+
+
+                    /*获取全局父级*/
+                    this.parent = this.graph.getDefaultParent();
 
                     let graph = this.graph
 
 
-                    /* =========init============= */
+                    /* ----------- init ----------- */
                     this.initToolbar()
-                    /* =========init============= */
+                    this.initKeyboardEvent()
+                    /* ----------- init ----------- */
 
-                    // 允许范围选取
+
+                    /* ----------- 设置配置值 ----------- */
+                    /*允许范围选取*/
                     new mxRubberband(graph);
-                    /*鼠标事件*/
+
+                    /*禁止鼠标右键事件*/
                     mxEvent.disableContextMenu(this.g1);
 
+                    //禁止大小缩放
+                    mxGraph.prototype.setCellsResizable(false);
+
+                    /*可连接*/
                     graph.setConnectable(true);
 
-                    graph.getStylesheet().getDefaultEdgeStyle()['edgeStyle'] = 'orthogonalEdgeStyle';
 
+                    /*回退事务管理器*/
+                    this.undoManager = new mxUndoManager();
+                    let listener = function (sender, evt) {
+                        that.undoManager.undoableEditHappened(evt.getProperty('edit'));
+                    };
+                    this.graph.getModel().addListener(mxEvent.UNDO, listener);
+                    this.graph.getView().addListener(mxEvent.UNDO, listener);
 
+                    /* ----------- 设置配置值 ----------- */
+
+                    /*del按钮*/
                     let keyHandler = new mxKeyHandler(graph);
                     // eslint-disable-next-line no-unused-vars
                     keyHandler.bindKey(46, function (evt) {
@@ -163,86 +141,93 @@
                         }
                     });
 
-                    // eslint-disable-next-line no-unused-vars
-                    graph.connectionHandler.createEdgeState = function (me) {
 
-                        let edge = graph.createEdge(null, null, null, null, null);
 
-                        return new mxCellState(this.graph.view, edge, this.graph.getCellStyle(edge));
-                    };
 
-                    // 生成 Hello world!
-
-                    // graph.getModel().beginUpdate();
-                    // try {
-                    //
-                    // } finally {
-                    //     // Updates the display
-                    //     graph.getModel().endUpdate();
-                    // }
-                    // 打包XML文件
-                    let encoder = new MxCodec();
-                    let xx = encoder.encode(graph.getModel());
-                    // 保存到getXml参数中
-                    this.getXml = mxUtils.getXml(xx);
                 }
             },
-            addToolBar(icon, w, h, style) {
+            initKeyboardEvent() {
+
+                // let map = {}; // You could also use an array
+                // let onkeydown = onkeyup = function (e) {
+                //     e = e || event; // to deal with IE
+                //     map[e.keyCode] = e.type == 'keydown';
+                //     /* insert conditional here */
+                // }
+                //
+                // document.addEventListener('keydown', onkeydown);
+
                 let that = this
-                let vertex = new mxCell(null, new mxGeometry(0, 0, w, h), style);
-                vertex.setVertex(true);
+                document.onkeydown = (evt) => {
 
-                let img = this.addToolbarItem(that.graph, that.toolbar, vertex, icon);
-                img.enabled = true;
+                    if (!evt) evt = event;
 
-                that.graph.getSelectionModel().addListener(mxEvent.CHANGE, function () {
-                    let tmp = that.graph.isSelectionEmpty();
-                    mxUtils.setOpacity(img, (tmp) ? 100 : 20);
-                    img.enabled = tmp;
-                });
-            },
-            addToolbarItem(graph, toolbar, prototype, image) {
+                    if (evt.ctrlKey && evt.keyCode === 90) {
+                        evt.preventDefault()
+                        that.undoManager.undo()
 
-
-                // Function that is executed when the image is dropped on
-                // the graph. The cell argument points to the cell under
-                // the mousepointer if there is one.
-                let funct = function (graph, evt, cell, x, y) {
-                    graph.stopEditing(false);
-
-                    let vertex = graph.getModel().cloneCell(prototype);
-                    vertex.geometry.x = x;
-                    vertex.geometry.y = y;
-
-                    graph.addCell(vertex);
-                    graph.setSelectionCell(vertex);
-                }
-
-                // Creates the image which is used as the drag icon (preview)
-                let img = toolbar.addMode(null, image, function (evt, cell) {
-                    let pt = this.graph.getPointForEvent(evt);
-                    funct(graph, evt, cell, pt.x, pt.y);
-                });
-
-
-
-                // eslint-disable-next-line no-unused-vars
-                mxEvent.addListener(img, 'mousedown', function (evt) {
-                    // do nothing
-                });
-
-                // This listener is always called first before any other listener
-                // in all browsers.
-                mxEvent.addListener(img, 'mousedown', function (evt) {
-                    if (img.enabled == false) {
-                        mxEvent.consume(evt);
                     }
-                });
 
-                mxUtils.makeDraggable(img, graph, funct);
+                    if (evt.ctrlKey && evt.keyCode === 89) {
+                        evt.preventDefault()
+                        that.undoManager.redo()
 
-                return img;
-            }
+                    }
+
+                    if (evt.ctrlKey && evt.keyCode === 65) {
+                        evt.preventDefault()
+                        that.graph.selectAll(null,true)
+                    }
+
+
+                }
+            },
+            addCell(toolItem, x, y) {
+                const {width, height} = toolItem
+                const styleObj = toolItem['style']
+
+                const style = Object.keys(styleObj).map((attr) => `${attr}=${styleObj[attr]}`).join(';')
+                const parent = this.graph.getDefaultParent()
+
+
+                this.graph.getModel().beginUpdate()
+                try {
+                    let vertex = this.graph.insertVertex(parent, null, null, x, y, width, height, style)
+                    vertex.title = toolItem['title']
+                } finally {
+                    this.graph.getModel().endUpdate()
+                }
+            },
+            initToolbar() {
+                const domArray = this.$refs.toolItem
+
+                if (!(domArray instanceof Array) || domArray.length <= 0) {
+                    return
+                }
+                domArray.forEach((dom, domIndex) => {
+                    const toolItem = this.toolbarItems[domIndex]
+                    const {width, height} = toolItem
+
+                    const dropHandler = (graph, evt, cell, x, y) => {
+                        this.addCell(toolItem, x, y)
+                    }
+                    const createDragPreview = () => {
+                        const elt = document.createElement('div')
+
+                        elt.style.border = '2px dotted black'
+                        elt.style.width = `${width}px`
+                        elt.style.height = `${height}px`
+                        return elt
+                    }
+
+                    mxUtils.makeDraggable(dom, this.graph, dropHandler, createDragPreview(), 0, 0, false, true)
+                })
+
+                // this.toolbar = new mxToolbar(document.getElementById("tool_bar"));
+                // this.toolbar.enabled = false
+                // this.addToolBar('https://emojipedia.org/static/img/logo/emojipedia-logo-64.f24011dcde3f.png', 40, 40, 'shape=hexagon');
+            },
+
         },
         mounted() {
             this.initDag()
@@ -251,6 +236,10 @@
 </script>
 
 <style>
+    #g1 {
+        border: 1px solid #ccc
+    }
+
     div.mxRubberband {
         position: absolute;
         overflow: hidden;
