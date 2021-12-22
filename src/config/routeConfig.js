@@ -21,10 +21,10 @@ const router = new Router({
             path: '/',
             component: () => import('@/views/login')
         },
-        // {
-        //     path: '/rtc',
-        //     component: () => import('@/views/rtc')
-        // },
+        {
+            path: '/dag',
+            component: () => import('@/views/dag')
+        },
         {
             path: '/management',
             component: () => import('@/views/management'),
@@ -55,7 +55,7 @@ const router = new Router({
     ]
 })
 
-let unAuthUrl = ['/','/login','/rtc']
+let unAuthUrl = ['/','/login','/rtc','/dag']
 
 function isInUnAuthList(url) {
     console.log(url);
