@@ -1,22 +1,41 @@
 <template>
-    <el-row style="padding: 15px">
+    <el-row >
         <el-col :xs="3" :sm="3" :md="3" :lg="3" :xl="3">
-            <!--            <div id="tool_bar"></div>-->
-            <div class="customToolbarContainer">
-                <div class="toolbarContainer">
-                    <div v-for="item in toolbarItems" :key="item['title']" ref="toolItem">
-                        <img :src="item['icon']" :alt="item['title']" style="width: 64px;height: 64px">
+            <el-collapse  accordion>
+                <el-collapse-item v-for="group in toolbarGroup" :key="group.name" :title="group.name" :name="group.name">
+                    <div v-for="item in group.graphArray" :key="item['title']" ref="toolItem" :data-width="item.width" :data-height="item.height">
+                        <img :src="item.icon" :alt="item.title"  style="width: 64px;height: 64px">
                         <span style="margin-left: 15px">{{item['title']}}</span>
                     </div>
-                </div>
-            </div>
+                </el-collapse-item>
+            </el-collapse>
+
+<!--            <div class="customToolbarContainer">-->
+<!--                <div class="toolbarContainer">-->
+<!--                    <div v-for="item in toolbarItems" :key="item['title']" ref="toolItem">-->
+<!--                        <img :src="item['icon']" :alt="item['title']" style="width: 64px;height: 64px">-->
+<!--                        <span style="margin-left: 15px">{{item['title']}}</span>-->
+<!--                    </div>-->
+<!--                </div>-->
+<!--            </div>-->
         </el-col>
         <el-col :xs="17" :sm="17" :md="17" :lg="17" :xl="17">
             <div id="g1"
                  style="position:relative;overflow:hidden;width:100%;height:90vh;background:url('grid.gif');cursor:default;"></div>
         </el-col>
         <el-col :xs="4" :sm="4" :md="4" :lg="4" :xl="4">
-            <div>option area</div>
+            <div v-show="currentOptionPage=='un_choose'">未选择</div>
+
+            <action_edg v-show="currentOptionPage=='action_edg'"/>
+
+            <db_vertex ref="db_vertex" @submit="dbSubmit" v-show="currentOptionPage=='db_vertex'"/>
+
+            <agg_vertex v-show="currentOptionPage=='agg_vertex'"/>
+            <average_vertex v-show="currentOptionPage=='average_vertex'"/>
+            <max_vertex v-show="currentOptionPage=='max_vertex'"/>
+            <merge_vertex v-show="currentOptionPage=='merge_vertex'"/>
+            <min_vertex v-show="currentOptionPage=='min_vertex'"/>
+            <sum_vertex v-show="currentOptionPage=='sum_vertex'"/>
         </el-col>
     </el-row>
 </template>
@@ -24,22 +43,26 @@
 <script>
     import mxgraph from "@/config/mxgraph";
 
-    import toolbarItems from "@/config/toolbar";
+    import toolbarGroup from "@/config/toolbar";
+
 
     const {
         mxGraph, mxClient, mxUtils,
         mxShape, mxConnectionConstraint, mxPoint,
         mxPolyline, mxRubberband, mxEvent,
-         mxKeyHandler, mxUndoManager
+        mxKeyHandler, mxUndoManager
     } = mxgraph;
 
     export default {
         name: "login",
         computed: {
-            toolbarItems: () => toolbarItems
+            toolbarGroup: () => toolbarGroup
         },
         data() {
             return {
+                toolbarGroupAll:[],
+                dataPool: {},
+                currentOptionPage: "un_choose",
                 parent: {},
                 g1: {},
                 graph: {},
@@ -48,6 +71,9 @@
             }
         },
         methods: {
+            dbSubmit(id, data) {
+                this.dataPool[id] = data
+            },
             initDag() {
                 let that = this
 
@@ -109,6 +135,18 @@
 
 
                     /* ----------- 设置配置值 ----------- */
+                    /*鼠标滚动*/
+                    mxEvent.addMouseWheelListener(function (evt, up) {
+                        if (up) {
+                            graph.zoomIn();
+                        } else {
+                            graph.zoomOut();
+                        }
+
+                        mxEvent.consume(evt);
+                    });
+
+
                     /*允许范围选取*/
                     new mxRubberband(graph);
 
@@ -129,8 +167,21 @@
                     };
                     this.graph.getModel().addListener(mxEvent.UNDO, listener);
                     this.graph.getView().addListener(mxEvent.UNDO, listener);
-
                     /* ----------- 设置配置值 ----------- */
+
+
+                    /* --------------- 设置事件 --------*/
+                    this.graph.addListener(mxEvent.CLICK, function (sender, evt) {
+                        let cell = evt.getProperty('cell');
+                        that.chooseCell(cell)
+
+                    });
+
+                    /*组件添加*/
+                    this.graph.addListener(mxEvent.CELLS_ADDED, function (sender, evt) {
+                        console.log(evt.properties.cells)
+                    });
+
 
                     /*del按钮*/
                     let keyHandler = new mxKeyHandler(graph);
@@ -141,21 +192,38 @@
                         }
                     });
 
-
+                    /* --------------- 设置事件 --------*/
 
 
                 }
             },
-            initKeyboardEvent() {
+            chooseCell(cell) {
 
-                // let map = {}; // You could also use an array
-                // let onkeydown = onkeyup = function (e) {
-                //     e = e || event; // to deal with IE
-                //     map[e.keyCode] = e.type == 'keydown';
-                //     /* insert conditional here */
-                // }
-                //
-                // document.addEventListener('keydown', onkeydown);
+                if (typeof cell == "undefined") {
+                    this.currentOptionPage = "un_choose"
+                    return
+                }
+
+                if (cell.edge == true) {
+                    console.log(cell.unique_id, typeof cell.unique_id == "undefined")
+                    if (typeof cell.unique_id == "undefined") {
+                        cell.unique_id = this.uuidv4()
+                    }
+                    cell.component = "action_edg"
+                }
+
+                this.currentOptionPage = cell.component
+
+                let loadData = this.dataPool[cell.unique_id];
+                if (typeof loadData == "undefined") {
+                    loadData = {}
+                }
+
+                this.$refs['db_vertex'].loadId(cell.unique_id, loadData)
+
+
+            },
+            initKeyboardEvent() {
 
                 let that = this
                 document.onkeydown = (evt) => {
@@ -176,7 +244,7 @@
 
                     if (evt.ctrlKey && evt.keyCode === 65) {
                         evt.preventDefault()
-                        that.graph.selectAll(null,true)
+                        that.graph.selectAll(null, true)
                     }
 
 
@@ -194,9 +262,16 @@
                 try {
                     let vertex = this.graph.insertVertex(parent, null, null, x, y, width, height, style)
                     vertex.title = toolItem['title']
+                    vertex.component = toolItem['component']
+                    vertex.unique_id = this.uuidv4()
                 } finally {
                     this.graph.getModel().endUpdate()
                 }
+            },
+            uuidv4() {
+                return ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, c =>
+                    (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
+                );
             },
             initToolbar() {
                 const domArray = this.$refs.toolItem
@@ -204,8 +279,11 @@
                 if (!(domArray instanceof Array) || domArray.length <= 0) {
                     return
                 }
+
                 domArray.forEach((dom, domIndex) => {
-                    const toolItem = this.toolbarItems[domIndex]
+                    const toolItem = this.toolbarGroupAll[domIndex]
+
+
                     const {width, height} = toolItem
 
                     const dropHandler = (graph, evt, cell, x, y) => {
@@ -230,7 +308,16 @@
 
         },
         mounted() {
+
+            let that=this
+            this.toolbarGroup.forEach(x=>{
+                x.graphArray.forEach(z=>{
+                    that.toolbarGroupAll.push(z)
+                })
+            })
+
             this.initDag()
+
         }
     }
 </script>
@@ -238,6 +325,10 @@
 <style>
     #g1 {
         border: 1px solid #ccc
+    }
+
+    .el-col {
+        padding: 15px
     }
 
     div.mxRubberband {

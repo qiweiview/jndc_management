@@ -58,7 +58,6 @@ const router = new Router({
 let unAuthUrl = ['/','/login','/rtc','/dag']
 
 function isInUnAuthList(url) {
-    console.log(url);
     let rs=false
     unAuthUrl.forEach(x => {
         if (url == x) {
