@@ -42,7 +42,7 @@ let toolbarGroup = [
             {
                 icon: '/tool_bar_icon/agg.png',
                 component: 'agg_vertex',
-                title: '分组',
+                title: '聚合',
             },
             {
                 icon: '/tool_bar_icon/merge.png',

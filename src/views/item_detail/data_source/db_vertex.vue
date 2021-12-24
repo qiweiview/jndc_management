@@ -1,5 +1,6 @@
 <template>
     <div>
+        <h3>数据源</h3>
         <el-form label-width="80px">
             <el-form-item label="名称">
                 <el-input v-model="database.name"></el-input>
@@ -40,7 +41,7 @@
                     name: '',
                     type: '',
                     content: [],
-                    minColumn:0
+                    minColumn: 0
                 },
                 db_type: [{
                     name: 'CSV',
@@ -52,24 +53,37 @@
         methods: {
             async changeFile(f) {
                 const data = await f.target.files[0].text()
-                let ar=data.split(/\r?\n/)
+                let ar = data.split(/\r?\n/)
                 this.$set(this.database, "content", ar);
-                let min=0;
-                ar.forEach(x=>{
-                    let sa=x.split(',')
-                    if (sa.length<min||min==0){
-                        min=sa.length
+                let min = 0;
+                ar.forEach(x => {
+                    let sa = x.split(',')
+                    if (sa.length < min || min == 0) {
+                        min = sa.length
                     }
                 })
                 this.$set(this.database, "minColumn", min);
-                this.$refs['input_file'].value=null
+                this.$refs['input_file'].value = null
+            },
+            getStoreData() {
+                return this.database
             },
             submit() {
-                this.$emit('submit', this.id, this.database)
+                this.$emit('submit', this.id, this.getStoreData())
             },
-            loadId(id, data) {
-                this.id = id
+            loadStoreData(data) {
                 this.database = data
+            },
+            load(id, data) {
+                this.id = id
+                this.loadStoreData(data)
+            },
+            initInnerData() {
+                let obj = {name: 'd1', type: 'CSV'}
+                return obj
+            },
+            acceptCheck() {
+              return false
             }
         },
         mounted() {

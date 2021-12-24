@@ -1,41 +1,45 @@
 <template>
-    <el-row >
+    <el-row>
         <el-col :xs="3" :sm="3" :md="3" :lg="3" :xl="3">
-            <el-collapse  accordion>
-                <el-collapse-item v-for="group in toolbarGroup" :key="group.name" :title="group.name" :name="group.name">
-                    <div v-for="item in group.graphArray" :key="item['title']" ref="toolItem" :data-width="item.width" :data-height="item.height">
-                        <img :src="item.icon" :alt="item.title"  style="width: 64px;height: 64px">
+            <el-collapse accordion>
+                <el-collapse-item v-for="group in toolbarGroup" :key="group.name" :title="group.name"
+                                  :name="group.name">
+                    <div v-for="item in group.graphArray" :key="item['title']" ref="toolItem" :data-width="item.width"
+                         :data-height="item.height">
+                        <img :src="item.icon" :alt="item.title" style="width: 64px;height: 64px">
                         <span style="margin-left: 15px">{{item['title']}}</span>
                     </div>
                 </el-collapse-item>
             </el-collapse>
 
-<!--            <div class="customToolbarContainer">-->
-<!--                <div class="toolbarContainer">-->
-<!--                    <div v-for="item in toolbarItems" :key="item['title']" ref="toolItem">-->
-<!--                        <img :src="item['icon']" :alt="item['title']" style="width: 64px;height: 64px">-->
-<!--                        <span style="margin-left: 15px">{{item['title']}}</span>-->
-<!--                    </div>-->
-<!--                </div>-->
-<!--            </div>-->
+            <!--            <div class="customToolbarContainer">-->
+            <!--                <div class="toolbarContainer">-->
+            <!--                    <div v-for="item in toolbarItems" :key="item['title']" ref="toolItem">-->
+            <!--                        <img :src="item['icon']" :alt="item['title']" style="width: 64px;height: 64px">-->
+            <!--                        <span style="margin-left: 15px">{{item['title']}}</span>-->
+            <!--                    </div>-->
+            <!--                </div>-->
+            <!--            </div>-->
         </el-col>
         <el-col :xs="17" :sm="17" :md="17" :lg="17" :xl="17">
             <div id="g1"
                  style="position:relative;overflow:hidden;width:100%;height:90vh;background:url('grid.gif');cursor:default;"></div>
         </el-col>
         <el-col :xs="4" :sm="4" :md="4" :lg="4" :xl="4">
-            <div v-show="currentOptionPage=='un_choose'">未选择</div>
+            <div v-show="currentOptionPage=='un_choose'">
+                <el-button type="primary" size="mini" @click="calculate">计算</el-button>
+            </div>
 
-            <action_edg v-show="currentOptionPage=='action_edg'"/>
+            <action_edg ref="action_edg" v-show="currentOptionPage=='action_edg'"/>
 
             <db_vertex ref="db_vertex" @submit="dbSubmit" v-show="currentOptionPage=='db_vertex'"/>
 
-            <agg_vertex v-show="currentOptionPage=='agg_vertex'"/>
-            <average_vertex v-show="currentOptionPage=='average_vertex'"/>
-            <max_vertex v-show="currentOptionPage=='max_vertex'"/>
-            <merge_vertex v-show="currentOptionPage=='merge_vertex'"/>
-            <min_vertex v-show="currentOptionPage=='min_vertex'"/>
-            <sum_vertex v-show="currentOptionPage=='sum_vertex'"/>
+            <agg_vertex ref="agg_vertex" @submit="dbSubmit" v-show="currentOptionPage=='agg_vertex'"/>
+            <average_vertex ref="average_vertex" @submit="dbSubmit" v-show="currentOptionPage=='average_vertex'"/>
+            <max_vertex ref="max_vertex" @submit="dbSubmit" v-show="currentOptionPage=='max_vertex'"/>
+            <merge_vertex ref="merge_vertex" @submit="dbSubmit" v-show="currentOptionPage=='merge_vertex'"/>
+            <min_vertex ref="min_vertex" @submit="dbSubmit" v-show="currentOptionPage=='min_vertex'"/>
+            <sum_vertex ref="sum_vertex" @submit="dbSubmit" v-show="currentOptionPage=='sum_vertex'"/>
         </el-col>
     </el-row>
 </template>
@@ -60,7 +64,7 @@
         },
         data() {
             return {
-                toolbarGroupAll:[],
+                toolbarGroupAll: [],
                 dataPool: {},
                 currentOptionPage: "un_choose",
                 parent: {},
@@ -71,8 +75,82 @@
             }
         },
         methods: {
+            calculate() {
+
+                let line = []
+
+                let point = []
+
+                let cells = this.graph.getModel().cells
+                for (let key in cells) {
+                    let obb = cells[key]
+                    if (obb.id.substring(0, 4) == 'cust') {
+
+                        if ('action_edg' == obb.component) {
+                            //线
+                            if (obb.source == null || obb.target == null) {
+                                this.graph.removeCells([obb])
+                            } else {
+                                line.push(obb)
+                            }
+                        } else {
+                            point.push(obb)
+                        }
+                    }
+                }
+
+
+                let pointNumMap = {}
+
+                line.forEach(x => {
+                    let sourceId = x.source.id
+                    let targetId = x.target.id
+                    let sourceCount = pointNumMap[sourceId]
+                    let targetCount = pointNumMap[targetId]
+
+                    if (typeof sourceCount == "undefined") {
+                        sourceCount = 0
+                    }
+
+                    if (typeof targetCount == "undefined") {
+                        targetCount = 0
+                    }
+
+                    targetCount = sourceCount + targetCount + 1
+                    pointNumMap[targetId] = targetCount
+                })
+
+                let array = []
+                for (let key in pointNumMap) {
+                    let obb = pointNumMap[key]
+                    array.push({id: key, step: obb})
+                }
+
+
+                let runList = []
+                while (array.length > 0) {
+                    let runPart = []
+                    let reduceArray = []
+                    array.forEach(x => {
+                        let sp = x.step;
+                        sp--
+                        x.step = sp
+                        if (sp == 0||sp == -1) {
+                            runPart.push(x)
+                        } else {
+                            reduceArray.push(x)
+                        }
+
+                    })
+                    array = reduceArray
+                    runList.push(runPart)
+                }
+
+                console.log(runList)
+            },
             dbSubmit(id, data) {
                 this.dataPool[id] = data
+                this.$message.success("保存成功")
             },
             initDag() {
                 let that = this
@@ -171,6 +249,7 @@
 
 
                     /* --------------- 设置事件 --------*/
+                    /*点击*/
                     this.graph.addListener(mxEvent.CLICK, function (sender, evt) {
                         let cell = evt.getProperty('cell');
                         that.chooseCell(cell)
@@ -179,7 +258,8 @@
 
                     /*组件添加*/
                     this.graph.addListener(mxEvent.CELLS_ADDED, function (sender, evt) {
-                        console.log(evt.properties.cells)
+                        let cell = evt.getProperty('cells');
+                        that.handleCellAdded(cell[0])
                     });
 
 
@@ -197,6 +277,74 @@
 
                 }
             },
+            getCellInfo(cell) {
+                let param = cell.id.split(";")
+                let unique_id = param[1]
+                let component = param[2]
+                let ref = this.$refs[component]
+                let info = {unique_id: unique_id, component: component, ref: ref}
+                return info
+            },
+            handleCellAdded(cell) {
+
+
+                if (typeof cell.unique_id == "undefined") {
+                    cell.unique_id = this.uuidv4()
+                }
+
+
+                /*处理点*/
+                if (cell.vertex == true) {
+                    let uniqueId = cell.unique_id
+                    let data = this.dataPool[uniqueId]
+                    if (typeof data == "undefined") {
+
+                        let info = this.getCellInfo(cell)
+                        data = info.ref.initInnerData()
+                        data.sourceValues = []
+                        this.dataPool[uniqueId] = data
+                    }
+                }
+
+
+                /*处理线*/
+                if (cell.edge == true) {
+
+
+                    cell.component = "action_edg"
+                    cell.id = 'cust;' + this.uuidv4() + ';' + cell.component
+
+
+                    let source = cell.source
+                    let target = cell.target
+                    if (source == null || target == null) {
+                        this.$message.error('连接线必须有目标')
+                        return;
+                    }
+
+
+                    let infoSource = this.getCellInfo(source)
+                    let infoTarget = this.getCellInfo(target)
+                    if (!infoTarget.ref.acceptCheck(infoSource.component)) {
+                        this.$message.error('节点不符合连接条件')
+                        return;
+                    }
+
+
+                    if (typeof source != "undefined" && typeof target != "undefined") {
+                        let sourceData = this.dataPool[source.unique_id]
+                        console.log('load source ----->', sourceData)
+
+                        let targetData = this.dataPool[target.unique_id]
+                        console.log('load target ----->', targetData)
+
+
+                        let info = this.getCellInfo(target)
+                        info.ref.bindSourceData(sourceData, targetData)
+                    }
+
+                }
+            },
             chooseCell(cell) {
 
                 if (typeof cell == "undefined") {
@@ -204,22 +352,12 @@
                     return
                 }
 
-                if (cell.edge == true) {
-                    console.log(cell.unique_id, typeof cell.unique_id == "undefined")
-                    if (typeof cell.unique_id == "undefined") {
-                        cell.unique_id = this.uuidv4()
-                    }
-                    cell.component = "action_edg"
-                }
 
                 this.currentOptionPage = cell.component
 
                 let loadData = this.dataPool[cell.unique_id];
-                if (typeof loadData == "undefined") {
-                    loadData = {}
-                }
-
-                this.$refs['db_vertex'].loadId(cell.unique_id, loadData)
+                let ref = this.$refs[cell.component]
+                ref.load(cell.unique_id, loadData)
 
 
             },
@@ -260,10 +398,10 @@
 
                 this.graph.getModel().beginUpdate()
                 try {
-                    let vertex = this.graph.insertVertex(parent, null, null, x, y, width, height, style)
+                    let id = 'cust;' + this.uuidv4() + ';' + toolItem.component
+                    let vertex = this.graph.insertVertex(parent, id, null, x, y, width, height, style)
                     vertex.title = toolItem['title']
                     vertex.component = toolItem['component']
-                    vertex.unique_id = this.uuidv4()
                 } finally {
                     this.graph.getModel().endUpdate()
                 }
@@ -309,9 +447,9 @@
         },
         mounted() {
 
-            let that=this
-            this.toolbarGroup.forEach(x=>{
-                x.graphArray.forEach(z=>{
+            let that = this
+            this.toolbarGroup.forEach(x => {
+                x.graphArray.forEach(z => {
                     that.toolbarGroupAll.push(z)
                 })
             })

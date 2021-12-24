@@ -1,15 +1,17 @@
 <template>
     <div>
+        <h3>聚合</h3>
         <el-table
-                :data="aggColumnsSelect"
+                height="600px"
+                :data="supportData.aggColumnsSelect"
                 style="width: 100%">
             <el-table-column
-                    label="日期"
+                    label="列序号"
                     width="180">
                 <template slot-scope="scope">
                     <el-select v-model="scope.row.index" placeholder="请选择">
                         <el-option
-                                v-for="item in aggColumns"
+                                v-for="item in supportData.aggColumns"
                                 :key="item.index"
                                 :label="item.index"
                                 :value="item.index">
@@ -27,7 +29,8 @@
                 </template>
             </el-table-column>
         </el-table>
-        <el-button @click="addOne">添加</el-button>
+        <el-button style="margin-top: 15px" @click="addOne" size="mini">添加列</el-button>
+        <el-button @click="submit" type="primary" size="mini">保存</el-button>
     </div>
 </template>
 
@@ -37,29 +40,78 @@
         data() {
             return {
                 id: "",
-                aggColumns: [
-                    {index: 0},
-                    {index: 1},
-                    {index: 2}],
-                aggColumnsSelect: []
+                supportData: {}
+
             }
         },
         methods: {
             remove(row) {
-                console.log(this.aggColumnsSelect)
                 let na = []
                 this.aggColumnsSelect.forEach(x => {
                     if (x != row) {
                         na.push(x)
                     }
                 })
-
-
                 this.$set(this, 'aggColumnsSelect', na)
-                console.log(this.aggColumnsSelect)
             },
             addOne() {
-                this.aggColumnsSelect.push({index:0})
+                this.supportData.aggColumnsSelect.push({index: 0})
+            },
+            submit() {
+                this.$emit('submit', this.id, this.getStoreData())
+            },
+            /*起始点数据绑定至目标点*/
+            bindSourceData(source, target) {
+                if ('db_vertex' == source.type) {
+                    target.minColumn = source.minColumn
+                    let newAggColumns = []
+                    for (let i = 0; i < target.minColumn; i++) {
+                        let fi = {index: i}
+                        newAggColumns.push(fi)
+                    }
+                    target.aggColumns = newAggColumns
+                }
+
+                if ('merge_vertex' == source.type) {
+                    target.minColumn = source.mergeColumns.length
+                    let newAggColumns = []
+                    for (let i = 0; i < target.minColumn; i++) {
+                        let fi = {index: i}
+                        newAggColumns.push(fi)
+                    }
+                    target.aggColumns = newAggColumns
+                }
+
+            },
+            getStoreData() {
+                let newObject = JSON.parse(JSON.stringify(this.supportData))
+                return newObject
+            },
+            loadStoreData(data) {
+                this.$set(this, 'supportData', data)
+            },
+            load(id, data) {
+                this.id = id
+                this.loadStoreData(data)
+            },
+            initInnerData() {
+                let obj = {
+                    type: 'agg',
+                    aggColumns: [],
+                    aggColumnsSelect: [],
+                    minColumn: 0
+                }
+                return obj
+            },
+            acceptCheck(componentType) {
+                let allow = ['db_vertex', 'merge_vertex']
+                let check = false
+                for (let i = 0; i < allow.length; i++) {
+                    if (allow[i] == componentType) {
+                        check = true
+                    }
+                }
+                return check
             }
         },
         mounted() {
