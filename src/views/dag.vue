@@ -28,6 +28,7 @@
         <el-col :xs="4" :sm="4" :md="4" :lg="4" :xl="4">
             <div v-show="currentOptionPage=='un_choose'">
                 <el-button type="primary" size="mini" @click="calculate">计算</el-button>
+
             </div>
 
             <action_edg ref="action_edg" v-show="currentOptionPage=='action_edg'"/>
@@ -64,6 +65,7 @@
         },
         data() {
             return {
+                choose_id: '',
                 toolbarGroupAll: [],
                 dataPool: {},
                 currentOptionPage: "un_choose",
@@ -75,11 +77,31 @@
             }
         },
         methods: {
+            cancel() {
+                this.graph.clearSelection()
+                this.currentOptionPage = "un_choose"
+            },
             calculate() {
 
+                /*连线集合*/
                 let line = []
 
+                /*端点集合*/
                 let point = []
+
+                let optionMap = {}
+
+
+                let loadItem = (unique_id, ref) => {
+                    let mapItemSource = optionMap[unique_id]
+                    if (typeof mapItemSource == "undefined") {
+                        mapItemSource = {unique_id: unique_id, parent: [], son: [], ref: ref}
+                        optionMap[unique_id] = mapItemSource
+
+                    }
+                    return mapItemSource;
+                }
+
 
                 let cells = this.graph.getModel().cells
                 for (let key in cells) {
@@ -91,6 +113,18 @@
                             if (obb.source == null || obb.target == null) {
                                 this.graph.removeCells([obb])
                             } else {
+                                let source = obb.source
+                                let sourceId = source.unique_id
+                                let mapItemSource = loadItem(sourceId, source)
+
+                                let target = obb.target
+                                let targetId = target.unique_id
+                                let mapItemTarget = loadItem(targetId)
+
+                                mapItemSource.son.push(mapItemTarget)
+
+                                mapItemTarget.parent.push(mapItemSource)
+
                                 line.push(obb)
                             }
                         } else {
@@ -100,53 +134,59 @@
                 }
 
 
-                let pointNumMap = {}
-
-                line.forEach(x => {
-                    let sourceId = x.source.id
-                    let targetId = x.target.id
-                    let sourceCount = pointNumMap[sourceId]
-                    let targetCount = pointNumMap[targetId]
-
-                    if (typeof sourceCount == "undefined") {
-                        sourceCount = 0
-                    }
-
-                    if (typeof targetCount == "undefined") {
-                        targetCount = 0
-                    }
-
-                    targetCount = sourceCount + targetCount + 1
-                    pointNumMap[targetId] = targetCount
-                })
-
-                let array = []
-                for (let key in pointNumMap) {
-                    let obb = pointNumMap[key]
-                    array.push({id: key, step: obb})
-                }
-
-
-                let runList = []
-                while (array.length > 0) {
-                    let runPart = []
-                    let reduceArray = []
-                    array.forEach(x => {
-                        let sp = x.step;
-                        sp--
-                        x.step = sp
-                        if (sp == 0||sp == -1) {
-                            runPart.push(x)
-                        } else {
-                            reduceArray.push(x)
+                let rmParent = (array, x) => {
+                    let na = []
+                    array.forEach(p => {
+                        if (p.unique_id != x.unique_id) {
+                            na.push(p)
                         }
-
                     })
-                    array = reduceArray
-                    runList.push(runPart)
+                    return na
                 }
 
-                console.log(runList)
+
+                let queue = []
+
+                for (let key in optionMap) {
+                    let sg = optionMap[key]
+                    if (sg.parent.length == 0) {
+                        sg.parentNum = 0
+                        queue.push(sg)
+                    }
+                }
+
+                let groupMap = {}
+
+                while (queue.length > 0) {
+                    let one = queue.shift()
+
+                    let gm = groupMap[one.parentNum]
+                    if (typeof gm == "undefined") {
+                        gm = []
+                        groupMap[one.parentNum] = gm
+                    }
+                    gm.push(one)
+
+
+                    one.son.forEach(x => {
+                        x.parent = rmParent(x.parent, one)
+                        if (x.parent.length == 0) {
+                            x.parentNum = one.parentNum + 1
+                            queue.push(x)
+                        }
+                    })
+
+                }
+
+
+                for (let i = 0; i < Object.keys(groupMap).length; i++) {
+                    let fo = groupMap[i]
+                    if (typeof fo != "undefined") {
+                        console.log('执行 ', fo)
+                    }
+                }
+
+
             },
             dbSubmit(id, data) {
                 this.dataPool[id] = data
@@ -222,6 +262,10 @@
                         }
 
                         mxEvent.consume(evt);
+                    });
+
+                    this.graph.addListener(mxEvent.ESCAPE, () => {
+                        that.cancel()
                     });
 
 
@@ -352,6 +396,7 @@
                     return
                 }
 
+                this.choose_id = cell.unique_id
 
                 this.currentOptionPage = cell.component
 
