@@ -134,6 +134,11 @@
                 }
 
 
+                if (line.length == 0) {
+                    this.$message.error('流程至少需要两个端点一条连线')
+                    return
+                }
+
                 let rmParent = (array, x) => {
                     let na = []
                     array.forEach(p => {
@@ -155,7 +160,15 @@
                     }
                 }
 
+                if (queue.length == 0) {
+                    this.$message.error('图中存在回环')
+                    return
+                }
+
                 let groupMap = {}
+
+
+                let hasLoop = true
 
                 while (queue.length > 0) {
                     let one = queue.shift()
@@ -171,11 +184,17 @@
                     one.son.forEach(x => {
                         x.parent = rmParent(x.parent, one)
                         if (x.parent.length == 0) {
+                            hasLoop = false
                             x.parentNum = one.parentNum + 1
                             queue.push(x)
                         }
                     })
 
+
+                }
+
+                if (hasLoop) {
+                    this.$message.error('图中存在回环')
                 }
 
 
