@@ -61,12 +61,13 @@
                 this.$emit('submit', this.id, this.getStoreData())
             },
             /*起始点数据绑定至目标点*/
-            bindSourceData(source,target){
+            bindSourceData(sourceId,source, targetId,target){
                 source.aggColumnsSelect.forEach(x => {
                     let fi = {index: x.index}
                     target.aggValue.push(fi)
                 })
 
+                target.nearSource=source.nearSource
                 target.minColumn=source.minColumn
                 let newAggColumns = []
                 for (let i = 0; i <  target.minColumn; i++) {

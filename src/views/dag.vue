@@ -46,6 +46,8 @@
 </template>
 
 <script>
+    import request from "@/config/requestConfig";
+
     import mxgraph from "@/config/mxgraph";
 
     import toolbarGroup from "@/config/toolbar";
@@ -80,6 +82,67 @@
             cancel() {
                 this.graph.clearSelection()
                 this.currentOptionPage = "un_choose"
+            },
+            sendDAG(line, point) {
+                let that = this
+                let db = []
+                let merge = []
+
+                point.forEach(x => {
+
+                    if ('db_vertex' == x.component) {
+                        let d = {id: x.unique_id, type: 'db_vertex'}
+                        db.push(d)
+                    }
+
+                    if ('merge_vertex' == x.component) {
+                        let data = that.dataPool[x.unique_id]
+                        let m = {
+                            id: x.unique_id,
+                            type: 'merge_vertex',
+                            sources: data.nearSources,
+                            mergeColumns: data.mergeColumns
+                        }
+                        merge.push(m)
+                    }
+
+
+                    let line = []
+                    merge.forEach(x => {
+                        let sources = x.sources
+                        sources.forEach(z => {
+                            let id = z.split(":")[1]
+                            let sl = {source: id, target: x.id,option:z.mergeColumns}
+                            line.push(sl)
+                        })
+                    })
+
+                    console.log('line--->', line)
+
+
+                    // let p = {id: x.unique_id}
+                    // points.push(p)
+                })
+
+                // line.forEach(x => {
+                //     let p = {source: x.source.unique_id, target: x.target.unique_id}
+                //     lines.push(p)
+                // })
+
+                request({
+                    url: '/deleteHostRouteRule',
+                    method: 'post',
+                    data: {
+                        edgDTOList: [],
+                        vertexDTOList: []
+                    }
+                    // eslint-disable-next-line no-unused-vars
+                }).then(response => {
+
+                }).catch(() => {
+                })
+
+
             },
             calculate() {
 
@@ -138,6 +201,15 @@
                     this.$message.error('流程至少需要两个端点一条连线')
                     return
                 }
+
+
+                this.sendDAG(line, point)
+
+                // eslint-disable-next-line no-constant-condition
+                if (true) {
+                    return;
+                }
+
 
                 let rmParent = (array, x) => {
                     let na = []
@@ -390,6 +462,7 @@
                     let infoTarget = this.getCellInfo(target)
                     if (!infoTarget.ref.acceptCheck(infoSource.component)) {
                         this.$message.error('节点不符合连接条件')
+                        this.graph.removeCells([cell])
                         return;
                     }
 
@@ -403,7 +476,7 @@
 
 
                         let info = this.getCellInfo(target)
-                        info.ref.bindSourceData(sourceData, targetData)
+                        info.ref.bindSourceData(source.unique_id, sourceData, target.unique_id, targetData)
                     }
 
                 }

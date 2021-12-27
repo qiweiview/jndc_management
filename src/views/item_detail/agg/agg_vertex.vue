@@ -61,8 +61,8 @@
                 this.$emit('submit', this.id, this.getStoreData())
             },
             /*起始点数据绑定至目标点*/
-            bindSourceData(source, target) {
-                if ('db_vertex' == source.type) {
+            bindSourceData(sourceId, source, targetId, target) {
+                if (typeof source.minColumn != "undefined") {
                     target.minColumn = source.minColumn
                     let newAggColumns = []
                     for (let i = 0; i < target.minColumn; i++) {
@@ -70,9 +70,8 @@
                         newAggColumns.push(fi)
                     }
                     target.aggColumns = newAggColumns
-                }
-
-                if ('merge_vertex' == source.type) {
+                    target.nearSource = {type: 'db:', id: sourceId, key: 'db' + sourceId}
+                } else if (typeof source.mergeColumns != "undefined") {
                     target.minColumn = source.mergeColumns.length
                     let newAggColumns = []
                     for (let i = 0; i < target.minColumn; i++) {
@@ -80,6 +79,9 @@
                         newAggColumns.push(fi)
                     }
                     target.aggColumns = newAggColumns
+                    target.nearSource = {type: 'merge:', id: sourceId, key: 'db' + sourceId}
+                } else {
+                    console.log('上游未选择数据')
                 }
 
             },
@@ -99,7 +101,11 @@
                     type: 'agg',
                     aggColumns: [],
                     aggColumnsSelect: [],
-                    minColumn: 0
+                    minColumn: 0,
+                    nearSource: {
+                        type: '',
+                        id: ''
+                    }//最近上游数据
                 }
                 return obj
             },
