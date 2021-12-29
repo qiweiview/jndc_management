@@ -62,7 +62,7 @@
             },
             /*起始点数据绑定至目标点*/
             bindSourceData(sourceId, source, targetId, target) {
-                if (typeof source.minColumn != "undefined") {
+                if (source.type=='db') {
                     target.minColumn = source.minColumn
                     let newAggColumns = []
                     for (let i = 0; i < target.minColumn; i++) {
@@ -70,16 +70,16 @@
                         newAggColumns.push(fi)
                     }
                     target.aggColumns = newAggColumns
-                    target.nearSource = {type: 'db:', id: sourceId, key: 'db' + sourceId}
-                } else if (typeof source.mergeColumns != "undefined") {
-                    target.minColumn = source.mergeColumns.length
+                    target.nearSource = {type: 'db', id: sourceId, key: 'db' + sourceId}
+                } else if (source.type=='merge_vertex') {
+                    target.minColumn = source.unionSources.length
                     let newAggColumns = []
                     for (let i = 0; i < target.minColumn; i++) {
                         let fi = {index: i}
                         newAggColumns.push(fi)
                     }
                     target.aggColumns = newAggColumns
-                    target.nearSource = {type: 'merge:', id: sourceId, key: 'db' + sourceId}
+                    target.nearSource = {type: 'merge', id: sourceId, key: 'merge' + sourceId}
                 } else {
                     console.log('上游未选择数据')
                 }

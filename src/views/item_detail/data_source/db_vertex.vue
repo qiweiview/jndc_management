@@ -6,11 +6,11 @@
                 <el-input v-model="database.name"></el-input>
             </el-form-item>
             <el-form-item label="类型">
-                <el-select v-model="database.type" placeholder="类型">
+                <el-select v-model="database.sourceType" placeholder="类型">
                     <el-option v-for="at in db_type" :key="at.value" :label="at.name" :value="at.value"></el-option>
                 </el-select>
             </el-form-item>
-            <el-form-item v-show="database.type=='CSV'">
+            <el-form-item v-show="database.sourceType=='CSV'">
                 <el-table
                         :data="database.content" style="width: 100%">
                     <el-table-column label="数据">
@@ -39,7 +39,7 @@
                 id: "",
                 database: {
                     name: '',
-                    type: '',
+                    sourceType: '',
                     content: [],
                     minColumn: 0
                 },
@@ -79,7 +79,7 @@
                 this.loadStoreData(data)
             },
             initInnerData() {
-                let obj = {name: 'd1', type: 'CSV'}
+                let obj = {name: 'd1', sourceType: 'CSV',type:'db'}
                 return obj
             },
             acceptCheck() {

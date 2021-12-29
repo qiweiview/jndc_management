@@ -85,44 +85,66 @@
             },
             sendDAG(line, point) {
                 let that = this
-                let db = []
+
                 let merge = []
 
                 point.forEach(x => {
 
-                    if ('db_vertex' == x.component) {
-                        let d = {id: x.unique_id, type: 'db_vertex'}
-                        db.push(d)
-                    }
-
                     if ('merge_vertex' == x.component) {
                         let data = that.dataPool[x.unique_id]
-                        let m = {
-                            id: x.unique_id,
-                            type: 'merge_vertex',
-                            sources: data.nearSources,
-                            mergeColumns: data.mergeColumns
-                        }
-                        merge.push(m)
+                        data.id = x.unique_id
+                        merge.push(data)
                     }
 
-
-                    let line = []
-                    merge.forEach(x => {
-                        let sources = x.sources
-                        sources.forEach(z => {
-                            let id = z.split(":")[1]
-                            let sl = {source: id, target: x.id,option:z.mergeColumns}
-                            line.push(sl)
-                        })
-                    })
-
-                    console.log('line--->', line)
-
-
-                    // let p = {id: x.unique_id}
-                    // points.push(p)
                 })
+
+                let body = {
+                    edgDTOList: [],
+                    vertexDTOList: []
+                }
+
+
+                let vertexMap = {}
+
+                merge.forEach(x => {
+                    x.nearSources.forEach(y => {
+                        let edg = {source: y.id, target: x.id, operationDTOS: []}
+                        vertexMap[y.id] = {id: y.id, vertexType: 'source'}
+                        vertexMap[x.id] = {id: x.id, vertexType: 'target'}
+                        y.mergeColumns.forEach(z => {
+                            edg.operationDTOS.push({operation: z.detail, index: z.index, type: z.type})
+                        })
+                        body.edgDTOList.push(edg)
+                    })
+                })
+
+                for (let key in vertexMap) {
+                    let dataSet = {rows: []}
+                    let sg = vertexMap[key]
+                    let data = this.dataPool[key]
+                    let vertex = {id: key, vertexType: sg.vertexType}
+                    if ('source' == sg.vertexType) {
+                        if ('db' == data.type) {
+                            data.content.forEach(x => {
+                                let row = {columnData: []}
+                                dataSet.rows.push(row)
+                                let sp = x.split(",")
+                                sp.forEach(Y => {
+                                    row.columnData.push(Y)
+                                })
+                            })
+
+                            vertex.dataSet = dataSet
+                            vertex.sourceType = 'db'
+                        } else {
+                            vertex.sourceType = 'merge'
+                        }
+                    }
+
+                    body.vertexDTOList.push(vertex)
+                }
+
+                console.log('body--->', body)
 
                 // line.forEach(x => {
                 //     let p = {source: x.source.unique_id, target: x.target.unique_id}
@@ -130,12 +152,9 @@
                 // })
 
                 request({
-                    url: '/deleteHostRouteRule',
+                    url: '/hi',
                     method: 'post',
-                    data: {
-                        edgDTOList: [],
-                        vertexDTOList: []
-                    }
+                    data: body
                     // eslint-disable-next-line no-unused-vars
                 }).then(response => {
 

@@ -45,11 +45,6 @@ let toolbarGroup = [
                 title: '聚合',
             },
             {
-                icon: '/tool_bar_icon/merge.png',
-                component: 'merge_vertex',
-                title: '合并',
-            },
-            {
                 icon: '/tool_bar_icon/max.png',
                 component: 'max_vertex',
                 title: '最大值',
@@ -68,6 +63,11 @@ let toolbarGroup = [
                 icon: '/tool_bar_icon/average.png',
                 component: 'average_vertex',
                 title: '平均值',
+            },
+            {
+                icon: '/tool_bar_icon/merge.png',
+                component: 'merge_vertex',
+                title: '合并',
             }
         ],
         graphArray: []
