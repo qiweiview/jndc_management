@@ -4,7 +4,7 @@
             <span style="display:block;font-size: 13px;color: #409EFF;padding: 10px">提示：规则生效于服务端配置的web端口</span>
 
             <el-input clearable v-model="searchKey" placeholder="筛选域名规则"
-                      style="width:20%"></el-input>
+                      @change="getHostList"        style="width:20%"></el-input>
             <el-button @click="getHostList" style="margin-left:15px">查 询</el-button>
             <el-button @click="openHostCreateBlog" style="margin-left:15px" type="success">新 增</el-button>
             <el-table :data="hostList">
@@ -604,6 +604,9 @@
             }
 
         }, mounted() {
+            if (typeof this.$route.query.port!='undefined'){
+                this.searchKey=this.$route.query.port
+            }
             this.currentHost = window.runtimeConfig.BASE_REQUEST_PATH
             this.getHostList()
             this.getServiceList()

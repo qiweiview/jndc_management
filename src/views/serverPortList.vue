@@ -13,7 +13,7 @@
                             </template>
                         </el-table-column>
                         <el-table-column label="监听端口" width="100px">
-                            <template slot-scope="scope"><span style="text-align: left">{{ scope.row.port }}</span>
+                            <template slot-scope="scope"><span   @click="routeToPortListPage(scope.row.port)" style="text-align: left;cursor: pointer">{{ scope.row.port }}</span>
                             </template>
                         </el-table-column>
                         <el-table-column label="处理请求时间段" width="200px">
@@ -205,6 +205,9 @@
             }
         },
         methods: {
+            routeToPortListPage(port){
+                this.$router.push({path:'/management/httpApp',query:{port:port}})
+            },
             doDateRangeEdit(){
                 let enableDateRange=this.chooseDateRange[0] + ',' + this.chooseDateRange[1]
                 let body={enableDateRange:enableDateRange,serverPortId: this.currentId,remark:this.portMonitoring.name}

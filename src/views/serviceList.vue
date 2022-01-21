@@ -18,11 +18,11 @@
                 <el-table-column label="服务暴露端口">
                     <template slot-scope="scope"><span style="">{{ scope.row.port }}</span></template>
                 </el-table-column>
-                <el-table-column label="隧道来源">
-                    <template slot-scope="scope"><span
-                            style="text-align: center">{{ scope.row.belongContextIp }}</span>
-                    </template>
-                </el-table-column>
+<!--                <el-table-column label="隧道来源">-->
+<!--                    <template slot-scope="scope"><span-->
+<!--                            style="text-align: center">{{ scope.row.belongContextIp }}</span>-->
+<!--                    </template>-->
+<!--                </el-table-column>-->
                 <!--                <el-table-column label="操作">-->
                 <!--                    <template slot-scope="scope">-->
                 <!--                        <el-button size="mini" type="danger" @click="pauseService(scope.row.name)">注 销 服 务</el-button>-->
