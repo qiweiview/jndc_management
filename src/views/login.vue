@@ -15,8 +15,8 @@
                                   placeholder="密码"></el-input>
                     </el-form-item>
                     <el-form-item style="text-align: right;">
-                        <el-button type="primary" @click="doLogin">登录</el-button>
-                        <el-button>取消</el-button>
+                        <el-button size="mini" type="primary" @click="doLogin">登录</el-button>
+                        <el-button size="mini">取消</el-button>
                     </el-form-item>
                 </el-form>
             </el-col>

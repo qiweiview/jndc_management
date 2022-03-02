@@ -20,7 +20,7 @@
                 <el-table-column label="转发端口">
                     <template slot-scope="scope"><span
                             @click="routeToPortListPage(scope.row.forwardPort)"
-                            :style="{'text-align': 'left','cursor': scope.row.forwardPort==0?'-':'pointer'}">{{ scope.row.forwardPort==0?'-':scope.row.forwardPort}}</span>
+                            :style="{'text-align': 'left','color': scope.row.forwardPort==0?'black':'deepskyblue','cursor': scope.row.forwardPort==0?'-':'pointer'}">{{ scope.row.forwardPort==0?'-':scope.row.forwardPort}}</span>
                     </template>
                 </el-table-column>
 
@@ -126,8 +126,8 @@
 
             </el-form>
             <div slot="footer" class="dialog-footer">
-                <el-button @click="closeHostCreateBlog">取 消</el-button>
-                <el-button type="primary" @click="doHostCreate">新 增</el-button>
+                <el-button size="mini" @click="closeHostCreateBlog">取 消</el-button>
+                <el-button size="mini" type="primary" @click="doHostCreate">新 增</el-button>
             </div>
         </el-dialog>
 
@@ -212,8 +212,8 @@
                 </el-form-item>
             </el-form>
             <div slot="footer" class="dialog-footer">
-                <el-button @click="closeHostConfigDialog">取 消</el-button>
-                <el-button type="primary" @click="doHostUpdate">更 新</el-button>
+                <el-button size="mini" @click="closeHostConfigDialog">取 消</el-button>
+                <el-button size="mini" type="primary" @click="doHostUpdate">更 新</el-button>
             </div>
         </el-dialog>
 

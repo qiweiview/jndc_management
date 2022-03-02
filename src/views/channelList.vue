@@ -5,28 +5,25 @@
             <el-tabs v-model="activeName" @tab-click="clickTab">
                 <el-tab-pane label="隧道列表" name="a">
                     <el-input clearable v-model="searchKey" placeholder="筛选隧道编号或IP"
-                              style="width:20%" @change="getServerChannelTable" ></el-input>
+                              style="width:20%" @change="getServerChannelTable"></el-input>
                     <el-button size="mini" @click="getServerChannelTable" style="margin-left:15px">查询</el-button>
                     <el-table :data="displayArray">
                         <el-table-column label="隧道编号">
-                            <template slot-scope="scope"><span style="cursor: pointer;color: dodgerblu;text-align: left"
-                                                               @click="toServicePage(scope.row.id)">{{ scope.row.id }}</span>
+                            <template slot-scope="scope"><span>{{ scope.row.id }}</span>
                             </template>
                         </el-table-column>
-                        <el-table-column label="隧道客户端IP">
-                            <template slot-scope="scope"><span>{{ scope.row.channelClientIp }}</span>
+                        <el-table-column label="隧道来源">
+                            <template slot-scope="scope"><span>{{ scope.row.channelClientIp }}:{{ scope.row.channelClientPort }}</span>
                             </template>
                         </el-table-column>
-                        <el-table-column label="隧道客户端端口">
-                            <template slot-scope="scope"><span style="">{{ scope.row.channelClientPort }}</span>
-                            </template>
-                        </el-table-column>
-                        <el-table-column label="注册服务数">
+                        <el-table-column width="100px" label="服务数">
                             <template slot-scope="scope"><span
-                                    style="text-align: center">{{ scope.row.supportServiceNum }}</span>
+                                    style="cursor: pointer;color: deepskyblue;text-align: left"
+                                    @click="toServicePage(scope.row.id)"
+                            >{{ scope.row.supportServiceNum }}</span>
                             </template>
                         </el-table-column>
-                        <el-table-column label="最后心跳时间">
+                        <el-table-column width="150px" label="最后心跳时间">
                             <template slot-scope="scope"><span style="">{{ new Date(scope.row.lastHearBeatTimeStamp).Format("yyyy-MM-dd HH:mm:ss")  }}</span>
                             </template>
                         </el-table-column>

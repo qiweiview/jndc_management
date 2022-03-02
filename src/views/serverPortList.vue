@@ -12,7 +12,7 @@
                         <el-table-column label="监听端口" width="100px">
                             <template slot-scope="scope">
                                 <span @click="routeToPortListPage(scope.row.port)"
-                                      style="text-align: left;cursor: pointer">
+                                      style="cursor: pointer;color: deepskyblue;text-align: center">
                                 {{ scope.row.port }}
                                 </span>
                             </template>
@@ -49,7 +49,7 @@
                             <template slot-scope="scope"><span
                                     style="">{{ scope.row.routeTo==null?'未关联过服务':scope.row.routeTo}}</span></template>
                         </el-table-column>
-                        <el-table-column fixed="right" label="操作" width="400px">
+                        <el-table-column fixed="right" label="操作" width="280px">
                             <template slot-scope="scope">
                                 <el-tooltip class="item" effect="dark" content="修改处理请求时间段" placement="bottom">
                                     <el-button size="mini" type="info"
@@ -114,8 +114,8 @@
                     </el-form-item>
                 </el-form>
                 <div slot="footer" class="dialog-footer">
-                    <el-button @click="closeDateRangeEditDialog">取 消</el-button>
-                    <el-button type="primary" @click="doDateRangeEdit">确 定</el-button>
+                    <el-button size="mini" @click="closeDateRangeEditDialog">取 消</el-button>
+                    <el-button size="mini" type="primary" @click="doDateRangeEdit">确 定</el-button>
                 </div>
             </el-dialog>
 
@@ -152,8 +152,8 @@
 
                 </el-form>
                 <div slot="footer" class="dialog-footer">
-                    <el-button @click="closeAddPortDialog">取 消</el-button>
-                    <el-button type="primary" @click="createPortMonitoring">确 定</el-button>
+                    <el-button size="mini" @click="closeAddPortDialog">取 消</el-button>
+                    <el-button size="mini" type="primary" @click="createPortMonitoring">确 定</el-button>
                 </div>
             </el-dialog>
             <el-dialog title="选择端口关联服务" :visible.sync="portBindDialog" width="45%" :close-on-click-modal="false" >

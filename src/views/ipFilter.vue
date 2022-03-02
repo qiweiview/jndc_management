@@ -152,8 +152,8 @@
 
             </el-form>
             <div slot="footer" class="dialog-footer">
-                <el-button @click="closeAddBlackPage">取 消</el-button>
-                <el-button type="primary" @click="sendAddBlack">确 定</el-button>
+                <el-button size="mini" @click="closeAddBlackPage">取 消</el-button>
+                <el-button size="mini" type="primary" @click="sendAddBlack">确 定</el-button>
             </div>
         </el-dialog>
         <el-dialog title="添加IP白名单" :visible.sync="whiteAddPage" width="30%">
@@ -170,8 +170,8 @@
 
             </el-form>
             <div slot="footer" class="dialog-footer">
-                <el-button @click="closeAddWhitePage">取 消</el-button>
-                <el-button type="primary" @click="sendAddWhite">确 定</el-button>
+                <el-button size="mini" @click="closeAddWhitePage">取 消</el-button>
+                <el-button size="mini" type="primary" @click="sendAddWhite">确 定</el-button>
             </div>
         </el-dialog>
 
@@ -197,8 +197,8 @@
 
             </el-form>
             <div slot="footer" class="dialog-footer">
-                <el-button @click="closeClearWindow">取 消</el-button>
-                <el-button type="primary" @click="doRecordClear">清 空</el-button>
+                <el-button size="mini" @click="closeClearWindow">取 消</el-button>
+                <el-button size="mini" type="primary" @click="doRecordClear">清 空</el-button>
             </div>
         </el-dialog>
     </el-row>
