@@ -3,26 +3,27 @@
         <el-col :xs="24" :sm="24" :md="24" :lg="24" :xl="24">
             <el-input clearable v-model="searchKey" placeholder="筛选服务名称或隧道来源"
                       style="width:20%" @change="getServiceList"></el-input>
-            <el-button @click="getServiceList" style="margin-left:15px">查询</el-button>
+            <el-button size="mini" @click="getServiceList" style="margin-left:15px">查询</el-button>
             <el-table :data="displayArray">
-                <el-table-column label="服务编号">
-                    <template slot-scope="scope"><span style="text-align: left">{{ scope.row.id }}</span></template>
+                <el-table-column label="归属客户端Id">
+                    <template slot-scope="scope"><span style="text-align: left">{{ scope.row.bindClientId }}</span>
+                    </template>
                 </el-table-column>
                 <el-table-column label="服务名称">
                     <template slot-scope="scope"><span style="text-align: left">{{ scope.row.name }}</span>
                     </template>
                 </el-table-column>
-                <el-table-column label="服务暴露IP">
-                    <template slot-scope="scope"><span style="">{{ scope.row.ip }}</span></template>
+                <el-table-column label="服务暴露来源">
+                    <template slot-scope="scope"><span style="">{{ scope.row.ip }}:{{scope.row.port}}</span></template>
                 </el-table-column>
-                <el-table-column label="服务暴露端口">
-                    <template slot-scope="scope"><span style="">{{ scope.row.port }}</span></template>
-                </el-table-column>
-<!--                <el-table-column label="隧道来源">-->
-<!--                    <template slot-scope="scope"><span-->
-<!--                            style="text-align: center">{{ scope.row.belongContextIp }}</span>-->
-<!--                    </template>-->
-<!--                </el-table-column>-->
+                <!--                <el-table-column label="服务暴露端口">-->
+                <!--                    <template slot-scope="scope"><span style="">{{ scope.row.port }}</span></template>-->
+                <!--                </el-table-column>-->
+                <!--                <el-table-column label="隧道来源">-->
+                <!--                    <template slot-scope="scope"><span-->
+                <!--                            style="text-align: center">{{ scope.row.belongContextIp }}</span>-->
+                <!--                    </template>-->
+                <!--                </el-table-column>-->
                 <!--                <el-table-column label="操作">-->
                 <!--                    <template slot-scope="scope">-->
                 <!--                        <el-button size="mini" type="danger" @click="pauseService(scope.row.name)">注 销 服 务</el-button>-->
@@ -107,7 +108,7 @@
                 } else {
                     let na = []
                     this.storeArray.forEach(x => {
-                        if (x.name.indexOf(this.searchKey) !== -1 || x.belongContextIp.indexOf(this.searchKey) !== -1) {
+                        if (x.name.indexOf(this.searchKey) !== -1 || x.bindClientId.indexOf(this.searchKey) !== -1) {
                             na.push(x)
                         }
                     });
@@ -117,8 +118,8 @@
 
         }
         , mounted() {
-            if (typeof (this.$route.query.ip) != 'undefined') {
-                this.searchKey = this.$route.query.ip
+            if (typeof (this.$route.query.clientId) != 'undefined') {
+                this.searchKey = this.$route.query.clientId
             }
             this.getServiceList()
             websocket.registerPage('serviceList', '服务注册', this.getServiceList)

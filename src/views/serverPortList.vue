@@ -5,26 +5,16 @@
                 <el-tab-pane label="端口监听" name="a">
                     <el-input clearable v-model="searchKey" placeholder="筛选服务器端口号"
                               style="width:20%" @change="getServerPortList"></el-input>
-                    <el-button @click="openAddPortDialog" type="success" style="margin-left:15px">添 加</el-button>
-                    <el-button @click="getServerPortList" style="margin-left:15px">查 询</el-button>
-                    <el-table :data="displayArray" style="margin: 0" max-height="680px">
-                        <el-table-column label="绑定隧道编号" width="300px">
-                            <template slot-scope="scope"><span style="text-align: left">{{ scope.row.bindClientId }}</span>
-                            </template>
-                        </el-table-column>
+                    <el-button size="mini" @click="openAddPortDialog" type="success" style="margin-left:15px">添 加
+                    </el-button>
+                    <el-button size="mini" @click="getServerPortList" style="margin-left:15px">查 询</el-button>
+                    <el-table :data="displayArray" style="margin: 0" max-height="600px">
                         <el-table-column label="监听端口" width="100px">
-                            <template slot-scope="scope"><span   @click="routeToPortListPage(scope.row.port)" style="text-align: left;cursor: pointer">{{ scope.row.port }}</span>
-                            </template>
-                        </el-table-column>
-                        <el-table-column label="处理请求时间段" width="200px">
-                            <template slot-scope="scope"><span style="text-align: left">{{ scope.row.enableDateRange.split(",")[0]+' 至 '+scope.row.enableDateRange.split(",")[1] }}</span>
-                            </template>
-                        </el-table-column>
-                        <el-table-column label="端口状态" width="150px">
                             <template slot-scope="scope">
-                                <span :style="{'text-align': 'left','color':checkPortStateByDateRange(scope.row.enableDateRange)?'green':'red'}">
-                            {{checkPortStateByDateRange(scope.row.enableDateRange)?'处理请求':'不处理请求'}}
-                            </span>
+                                <span @click="routeToPortListPage(scope.row.port)"
+                                      style="text-align: left;cursor: pointer">
+                                {{ scope.row.port }}
+                                </span>
                             </template>
                         </el-table-column>
                         <el-table-column label="端口备注" width="200px">
@@ -38,33 +28,52 @@
                                 <span v-if="scope.row.portEnable==2" style="color:#67C23A">启动中</span>
                             </template>
                         </el-table-column>
+                        <el-table-column label="绑定隧道编号" width="300px">
+                            <template slot-scope="scope"><span
+                                    style="text-align: left">{{ scope.row.bindClientId }}</span>
+                            </template>
+                        </el-table-column>
+
+                        <el-table-column label="处理请求时间段" width="200px">
+                            <template slot-scope="scope"><span style="text-align: left">{{ scope.row.enableDateRange.split(",")[0]+' 至 '+scope.row.enableDateRange.split(",")[1] }}</span>
+                            </template>
+                        </el-table-column>
+                        <el-table-column label="端口状态" width="150px">
+                            <template slot-scope="scope">
+                                <span :style="{'text-align': 'left','color':checkPortStateByDateRange(scope.row.enableDateRange)?'green':'red'}">
+                            {{checkPortStateByDateRange(scope.row.enableDateRange)?'处理请求':'不处理请求'}}
+                            </span>
+                            </template>
+                        </el-table-column>
                         <el-table-column label="服务关联记录" width="200px">
                             <template slot-scope="scope"><span
                                     style="">{{ scope.row.routeTo==null?'未关联过服务':scope.row.routeTo}}</span></template>
                         </el-table-column>
-                        <el-table-column label="操作" width="400px">
+                        <el-table-column fixed="right" label="操作" width="400px">
                             <template slot-scope="scope">
                                 <el-tooltip class="item" effect="dark" content="修改处理请求时间段" placement="bottom">
                                     <el-button size="mini" type="info"
-                                               @click="openDateRangeEditDialog(scope.row.id,scope.row.enableDateRange,scope.row.name)">编 辑
+                                               @click="openDateRangeEditDialog(scope.row.id,scope.row.enableDateRange,scope.row.name)">
+                                        编 辑
                                     </el-button>
                                 </el-tooltip>
 
                                 <el-button v-if="scope.row.portEnable==1" size="mini" type="warning"
-                                           @click="stopServiceBind(scope.row.id)">停 止 监 听
+                                           @click="stopServiceBind(scope.row.id)">停止
                                 </el-button>
 
                                 <el-tooltip class="item" effect="dark" content="启动端口监听" placement="bottom">
                                     <el-button v-if="scope.row.portEnable==0" size="mini" type="success"
-                                               @click="openPortBindDialog(scope.row.id)">启 动
+                                               @click="openPortBindDialog(scope.row.id)">启动
                                     </el-button>
                                 </el-tooltip>
                                 <el-button v-if="scope.row.portEnable==2" size="mini" type="primary" disabled>{{
                                     '监听启动中...' }}
                                 </el-button>
                                 <el-tooltip class="item" effect="dark" content="移除端口监听" placement="bottom">
-                                    <el-button v-if="scope.row.portEnable==0||scope.row.portEnable==2" size="mini" type="danger"
-                                               @click="deleteServiceBindRecord(scope.row.id)">移 除
+                                    <el-button v-if="scope.row.portEnable==0||scope.row.portEnable==2" size="mini"
+                                               type="danger"
+                                               @click="deleteServiceBindRecord(scope.row.id)">移除
                                     </el-button>
                                 </el-tooltip>
                                 <el-tooltip class="item" effect="dark" content="重置(清空)服务关联" placement="bottom">

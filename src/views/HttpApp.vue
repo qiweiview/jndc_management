@@ -4,9 +4,9 @@
             <span style="display:block;font-size: 13px;color: #409EFF;padding: 10px">提示：规则生效于服务端配置的web端口</span>
 
             <el-input clearable v-model="searchKey" placeholder="筛选域名规则"
-                      @change="getHostList"        style="width:20%"></el-input>
-            <el-button @click="getHostList" style="margin-left:15px">查 询</el-button>
-            <el-button @click="openHostCreateBlog" style="margin-left:15px" type="success">新 增</el-button>
+                      @change="getHostList" style="width:20%"></el-input>
+            <el-button size="mini" @click="getHostList" style="margin-left:15px">查 询</el-button>
+            <el-button size="mini" @click="openHostCreateBlog" style="margin-left:15px" type="success">新 增</el-button>
             <el-table :data="hostList">
                 <el-table-column label="域名规则字符">
                     <template slot-scope="scope"><span style="text-align: left">{{ scope.row.hostKeyWord }}</span>
@@ -98,7 +98,7 @@
                     <el-tooltip class="item" effect="dark" content="目标来源于 '端口监听' 模块" placement="right">
                         <i style="color: gray;margin-left: 5px;font-size: 15px;" class="el-icon-question"></i>
                     </el-tooltip>
-                    <el-table :data="displayArray" style="margin: 0">
+                    <el-table max-height="350px" :data="displayArray" style="margin: 0">
                         <el-table-column label="监听端口" width="100px">
                             <template slot-scope="scope"><span style="text-align: left">{{ scope.row.port }}</span>
                             </template>
@@ -113,7 +113,7 @@
                         </el-table-column>
 
 
-                        <el-table-column label="操作" width="400px">
+                        <el-table-column fixed="right" label="操作" width="100px">
 
                             <template slot-scope="scope">
                                 <el-button size="mini" type="primary" @click="chooseService(scope.row)">
@@ -187,7 +187,7 @@
                     <el-tooltip class="item" effect="dark" content="目标来源于 '端口监听' 模块" placement="right">
                         <i style="color: gray;margin-left: 5px;font-size: 15px;" class="el-icon-question"></i>
                     </el-tooltip>
-                    <el-table :data="displayArray" style="margin: 0" max-height="280px">
+                    <el-table :data="displayArray" style="margin: 0" max-height="350px">
                         <el-table-column label="监听端口" width="100px">
                             <template slot-scope="scope"><span style="text-align: left">{{ scope.row.port }}</span>
                             </template>
@@ -200,7 +200,7 @@
                             <template slot-scope="scope"><span
                                     style="">{{ scope.row.routeTo==null?'未关联过服务':scope.row.routeTo}}</span></template>
                         </el-table-column>
-                        <el-table-column label="操作">
+                        <el-table-column fixed="right" label="操作" width="100px">
 
                             <template slot-scope="scope">
                                 <el-button size="mini" type="primary" @click="chooseServiceForEdit(scope.row)">

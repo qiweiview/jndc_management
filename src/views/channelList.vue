@@ -6,14 +6,15 @@
                 <el-tab-pane label="隧道列表" name="a">
                     <el-input clearable v-model="searchKey" placeholder="筛选隧道编号或IP"
                               style="width:20%" @change="getServerChannelTable" ></el-input>
-                    <el-button @click="getServerChannelTable" style="margin-left:15px">查询</el-button>
+                    <el-button size="mini" @click="getServerChannelTable" style="margin-left:15px">查询</el-button>
                     <el-table :data="displayArray">
                         <el-table-column label="隧道编号">
-                            <template slot-scope="scope"><span style="text-align: left">{{ scope.row.id }}</span>
+                            <template slot-scope="scope"><span style="cursor: pointer;color: dodgerblu;text-align: left"
+                                                               @click="toServicePage(scope.row.id)">{{ scope.row.id }}</span>
                             </template>
                         </el-table-column>
                         <el-table-column label="隧道客户端IP">
-                            <template slot-scope="scope"><span @click="toServicePage(scope.row.channelClientIp)" style="cursor: pointer;color: dodgerblue">{{ scope.row.channelClientIp }}</span>
+                            <template slot-scope="scope"><span>{{ scope.row.channelClientIp }}</span>
                             </template>
                         </el-table-column>
                         <el-table-column label="隧道客户端端口">
@@ -112,8 +113,8 @@
             }
         },
         methods: {
-            toServicePage(ip){
-                this.$router.push({path:'/management/services',query:{ip:ip}})
+            toServicePage(clientId) {
+                this.$router.push({path: '/management/services', query: {clientId: clientId}})
             },
             clearChannelRecord() {
                 let _this = this
