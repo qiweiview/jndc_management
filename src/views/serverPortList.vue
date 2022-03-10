@@ -123,7 +123,7 @@
             <el-dialog title="添加端口监听" :visible.sync="addPortDialog" width="30%" :close-on-click-modal="false" >
                 <el-form label-position="top" :model="portMonitoring">
                     <el-form-item label="端口">
-                        <el-input-number v-model="portMonitoring.port" :min="0" :max="16384"
+                        <el-input-number v-model="portMonitoring.port" :min="0" :max="20000"
                                          label=""></el-input-number>
                     </el-form-item>
 
