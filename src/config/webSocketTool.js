@@ -61,7 +61,11 @@ websocket4v.create = (name, url) => {
     }
 
 
-    let inner = new WebSocket(window.runtimeConfig.BASE_WEBSOCKET_PATH + url + '?auth-token=' + localStorage.getItem('auth-token'));
+
+    let wsURL="ws://" +window.location.host+'/'+ url + '?auth-token=' + localStorage.getItem('auth-token')
+    console.log(wsURL,wsURL)
+
+    let inner = new WebSocket(wsURL);
 
 
     inner.onopen = () => {
