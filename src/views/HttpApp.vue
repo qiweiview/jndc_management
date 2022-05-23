@@ -7,7 +7,7 @@
                       @change="getHostList" style="width:20%"></el-input>
             <el-button size="mini" @click="getHostList" style="margin-left:15px">查 询</el-button>
             <el-button size="mini" @click="openHostCreateBlog" style="margin-left:15px" type="success">新 增</el-button>
-            <el-table :data="hostList">
+            <el-table :data="hostList" max-height="700px">
                 <el-table-column label="域名规则字符">
                     <template slot-scope="scope"><span style="text-align: left">{{ scope.row.hostKeyWord }}</span>
                     </template>
@@ -266,7 +266,7 @@
                 displayArray: [],
                 searchKey: '',
                 hostList: [],
-                recordRows: 10,
+                recordRows: 15,
                 recordCurrentPage: 1,
                 chanelRecordTotal: 0,
                 hostCreateBlog: false,

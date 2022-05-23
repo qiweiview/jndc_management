@@ -8,7 +8,7 @@
                     <el-button size="mini" @click="openAddPortDialog" type="success" style="margin-left:15px">添 加
                     </el-button>
                     <el-button size="mini" @click="getServerPortList" style="margin-left:15px">查 询</el-button>
-                    <el-table :data="displayArray" style="margin: 0" max-height="600px">
+                    <el-table :data="displayArray" style="margin: 0" max-height="700px">
                         <el-table-column label="监听端口" width="100px">
                             <template slot-scope="scope">
                                 <span @click="routeToPortListPage(scope.row.port)"
