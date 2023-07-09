@@ -10,11 +10,11 @@
                     </template>
                 </el-table-column>
                 <el-table-column label="服务名称">
-                    <template slot-scope="scope"><span style="text-align: left">{{ scope.row.name }}</span>
+                    <template slot-scope="scope"><span style="text-align: left">{{ scope.row.serviceName }}</span>
                     </template>
                 </el-table-column>
                 <el-table-column label="服务暴露来源">
-                    <template slot-scope="scope"><span style="">{{ scope.row.ip }}:{{scope.row.port}}</span></template>
+                    <template slot-scope="scope"><span style="">{{ scope.row.serviceIp }}:{{scope.row.servicePort}}</span></template>
                 </el-table-column>
                 <!--                <el-table-column label="服务暴露端口">-->
                 <!--                    <template slot-scope="scope"><span style="">{{ scope.row.port }}</span></template>-->
@@ -108,7 +108,7 @@
                 } else {
                     let na = []
                     this.storeArray.forEach(x => {
-                        if (x.name.indexOf(this.searchKey) !== -1 || x.bindClientId.indexOf(this.searchKey) !== -1) {
+                        if (x.serviceName.indexOf(this.searchKey) !== -1 || x.bindClientId.indexOf(this.searchKey) !== -1) {
                             na.push(x)
                         }
                     });

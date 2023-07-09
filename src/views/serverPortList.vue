@@ -159,17 +159,17 @@
             <el-dialog title="选择端口关联服务" :visible.sync="portBindDialog" width="45%" :close-on-click-modal="false" >
                 <el-table :data="serverChannelList" max-height="450">
                     <el-table-column label="服务名称">
-                        <template slot-scope="scope"><span :title="scope.row.id" style="text-align: left">{{ scope.row.name }}</span>
+                        <template slot-scope="scope"><span :title="scope.row.id" style="text-align: left">{{ scope.row.serviceName }}</span>
                         </template>
                     </el-table-column>
                     <el-table-column label="服务本地端口">
                         <template slot-scope="scope"><span
-                                style="text-align: center">{{ scope.row.port }}</span>
+                                style="text-align: center">{{ scope.row.servicePort }}</span>
                         </template>
                     </el-table-column>
                     <el-table-column label="隧道来源">
                         <template slot-scope="scope"><span
-                                style="text-align: center">{{ scope.row.belongContextIp }}</span>
+                                style="text-align: center">{{ scope.row.serviceIp }}</span>
                         </template>
                     </el-table-column>
 
@@ -226,7 +226,7 @@
                     data: body
                     // eslint-disable-next-line no-unused-vars
                 }).then(response => {
-                    if (response.code == 200) {
+                    if (response.code == 0) {
                         this.$message.success(response.message);
                     } else {
                         this.$message.error(response.message);
@@ -284,7 +284,7 @@
                         data: data
                         // eslint-disable-next-line no-unused-vars
                     }).then(response => {
-                        if (response.code == 200) {
+                        if (response.code == 0) {
                             //refresh force
                             _this.$message.success(response.message)
                             _this.getServerPortList()
@@ -316,7 +316,7 @@
                         data: data
                         // eslint-disable-next-line no-unused-vars
                     }).then(response => {
-                        if (response.code == 200) {
+                        if (response.code == 0) {
                             //refresh force
                             _this.$message.success(response.message);
                             _this.getServerPortList()
@@ -348,7 +348,7 @@
                         data: data
                         // eslint-disable-next-line no-unused-vars
                     }).then(response => {
-                        if (response.code == 200) {
+                        if (response.code == 0) {
                             //refresh force
                             _this.$message.success(response.message);
                             _this.getServerPortList()
@@ -373,7 +373,7 @@
                     data: data
                     // eslint-disable-next-line no-unused-vars
                 }).then(response => {
-                    if (response.code == 200) {
+                    if (response.code == 0) {
                         //refresh force
                         this.$message.success(response.message);
                         this.getServerPortList()
@@ -394,7 +394,7 @@
                     data: this.portMonitoring
                     // eslint-disable-next-line no-unused-vars
                 }).then(response => {
-                    if (response.code == 200) {
+                    if (response.code == 0) {
                         //refresh force
                         this.storeArray = []
                         this.getServerPortList()

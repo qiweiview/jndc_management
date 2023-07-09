@@ -417,7 +417,7 @@
                         data: {id: row.id}
                         // eslint-disable-next-line no-unused-vars
                     }).then(response => {
-                        if (response.code == 200) {
+                        if (response.code == 0) {
                             //refresh force
                             _this.$message.success(response.message)
                             _this.getHostList()
@@ -466,7 +466,7 @@
                     // eslint-disable-next-line no-unused-vars
                 }).then(response => {
                     loading.close()
-                    if (response.code == 200) {
+                    if (response.code == 0) {
                         //refresh force
                         this.$message.success(response.message)
                         this.getHostList()
@@ -516,7 +516,7 @@
                     // eslint-disable-next-line no-unused-vars
                 }).then(response => {
                     loading.close()
-                    if (response.code == 200) {
+                    if (response.code == 0) {
                         //refresh force
                         this.$message.success(response.message)
                         this.getHostList()
